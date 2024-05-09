@@ -22,7 +22,6 @@
 # SOFTWARE.
 
 import tensorflow as tf
-import keras
 
 
 # Hand-made leaky relu
@@ -33,15 +32,16 @@ def leaky_relu(x, alpha=0.2):
 # 2D convolution wrapper
 def conv2d_leaky(x, kernel_shape, bias_shape, strides=1, relu=True, padding='SAME'):
     # Conv2D
-    weights = tf.compat.v1.get_variable(
+    weights = tf.get_variable(
         "weights",  # The name of the variable we are referring to (NOTE: it has to be unique in the context where it is
         # defined, otherwise an error will occur).
         kernel_shape,  # This determines the shape of the weight matrix
-        initializer=keras.initializers.GlorotUniform(),  # This specifies the way the weights will be initialized
+        initializer=tf.contrib.layers.xavier_initializer(),  # This specifies the way the weights will be initialized
         # the Xavier initializer it's one among various choices (suggested to use in this case)
         dtype=tf.float32  # The type used in memory to store the weights
     )
-    biases = tf.compat.v1.get_variable("biases", bias_shape, initializer=keras.initializers.truncated_normal(), dtype=tf.float32)
+
+    biases = tf.get_variable("biases", bias_shape, initializer=tf.truncated_normal_initializer(), dtype=tf.float32)
     # Same thing described in the line above
 
     output = tf.nn.conv2d(
@@ -58,9 +58,6 @@ def conv2d_leaky(x, kernel_shape, bias_shape, strides=1, relu=True, padding='SAM
         # way that the output feature map has the same spatial dimensions as the input. "VALID" means that the filter
         # is applied only where it fully overlaps with the tensor.
     )
-    
-    output = tf.nn.elu(output)  # Application of the activation function.
-    # This line was added by me to handle conflicts inherited by the migration from TF1 to TF2.
 
     output = tf.nn.bias_add(output, biases)  # Here we are just adding biases to the output tensor
 
@@ -74,11 +71,11 @@ def conv2d_leaky(x, kernel_shape, bias_shape, strides=1, relu=True, padding='SAM
 # 2D deconvolution wrapper
 def deconv2d_leaky(x, kernel_shape, bias_shape, strides=1, relu=True, padding='SAME'):
     # Conv2D
-    weights = tf.compat.v1.get_variable("weights", kernel_shape, initializer=keras.initializers.GlorotUniform(),
+    weights = tf.get_variable("weights", kernel_shape, initializer=tf.contrib.layers.xavier_initializer(),
                               dtype=tf.float32)
     # Same as in the above function
 
-    biases = tf.compat.v1.get_variable("biases", bias_shape, initializer=keras.initializers.truncated_normal(), dtype=tf.float32)
+    biases = tf.get_variable("biases", bias_shape, initializer=tf.truncated_normal_initializer(), dtype=tf.float32)
     # Same as in the above function
 
     x_shape = tf.shape(x)  # Here it's extracting the shape size of the input tensor
@@ -94,9 +91,7 @@ def deconv2d_leaky(x, kernel_shape, bias_shape, strides=1, relu=True, padding='S
                                     # increase the dimensionality of the output.
                                     padding=padding
                                     )
-
-    output = tf.nn.elu(output)  # Application of the activation function.
-    # This line was added by me to handle conflicts inherited by the migration from TF1 to TF2.
+    #
 
     output = tf.nn.bias_add(output, biases)
     # ReLU (if required)

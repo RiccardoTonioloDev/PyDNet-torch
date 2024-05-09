@@ -21,6 +21,7 @@ from collections import namedtuple
 
 import numpy as np
 import tensorflow as tf
+import tensorflow.contrib.slim as slim
 
 from bilinear_sampler import *
 from pydnet import *
@@ -72,7 +73,7 @@ class MonodepthModel(object):
         s = tf.shape(x)
         h = s[1]
         w = s[2]
-        return tf.compat.v1.image.resize_nearest_neighbor(x, [h * ratio, w * ratio])
+        return tf.image.resize_nearest_neighbor(x, [h * ratio, w * ratio])
 
     def scale_pyramid(self, img, num_scales):
         scaled_imgs = []  # don't need full res images
@@ -83,7 +84,7 @@ class MonodepthModel(object):
             ratio = 2 ** (i + 1)
             nh = h / ratio
             nw = w / ratio
-            scaled_imgs.append(tf.cast(tf.compat.v1.image.resize_area(img, [nh, nw]), tf.float32))
+            scaled_imgs.append(tf.cast(tf.image.resize_area(img, [nh, nw]), tf.float32))
         return scaled_imgs
 
     def generate_image_left(self, img, disp):
@@ -96,12 +97,12 @@ class MonodepthModel(object):
         C1 = 0.01 ** 2
         C2 = 0.03 ** 2
 
-        mu_x = tf.nn.avg_pool2d(x, 3, 1, 'VALID')
-        mu_y = tf.nn.avg_pool2d(y, 3, 1, 'VALID')
+        mu_x = slim.avg_pool2d(x, 3, 1, 'VALID')
+        mu_y = slim.avg_pool2d(y, 3, 1, 'VALID')
 
-        sigma_x = tf.nn.avg_pool2d(x ** 2, 3, 1, 'VALID') - mu_x ** 2
-        sigma_y = tf.nn.avg_pool2d(y ** 2, 3, 1, 'VALID') - mu_y ** 2
-        sigma_xy = tf.nn.avg_pool2d(x * y, 3, 1, 'VALID') - mu_x * mu_y
+        sigma_x = slim.avg_pool2d(x ** 2, 3, 1, 'VALID') - mu_x ** 2
+        sigma_y = slim.avg_pool2d(y ** 2, 3, 1, 'VALID') - mu_y ** 2
+        sigma_xy = slim.avg_pool2d(x * y, 3, 1, 'VALID') - mu_x * mu_y
 
         SSIM_n = (2 * mu_x * mu_y + C1) * (2 * sigma_xy + C2)
         SSIM_d = (mu_x ** 2 + mu_y ** 2 + C1) * (sigma_x + sigma_y + C2)
@@ -126,29 +127,28 @@ class MonodepthModel(object):
         return smoothness_x + smoothness_y
 
     def build_model(self):
-        # This piece of code isn't valid anymore in TF2
-        # with slim.arg_scope([tf.nn.conv2d, tf.nn.conv2d_transpose], activation_fn=tf.nn.elu):
-        with tf.compat.v1.variable_scope('model', reuse=self.reuse_variables):
+        with slim.arg_scope([slim.conv2d, slim.conv2d_transpose], activation_fn=tf.nn.elu):
+            with tf.variable_scope('model', reuse=self.reuse_variables):
 
-            self.left_pyramid = self.scale_pyramid(self.left, 4)
-            if self.mode == 'train':
-                self.right_pyramid = self.scale_pyramid(self.right, 4)
+                self.left_pyramid = self.scale_pyramid(self.left, 4)
+                if self.mode == 'train':
+                    self.right_pyramid = self.scale_pyramid(self.right, 4)
 
-            if self.params.do_stereo:
-                self.model_input = tf.concat([self.left, self.right], 3)
-            else:
-                self.model_input = self.left
+                if self.params.do_stereo:
+                    self.model_input = tf.concat([self.left, self.right], 3)
+                else:
+                    self.model_input = self.left
 
-            # build model
-            placeholders = {"im0": self.model_input}
-            model = pydnet(placeholders)
-            self.disp1 = model.results[0]
-            self.disp2 = model.disp2
-            self.disp3 = model.disp3
-            self.disp4 = model.disp4
-            self.disp5 = model.disp5
-            self.disp6 = model.disp6
-            self.disp7 = model.disp7
+                # build model
+                placeholders = {"im0": self.model_input}
+                model = pydnet(placeholders)
+                self.disp1 = model.results[0]
+                self.disp2 = model.disp2
+                self.disp3 = model.disp3
+                self.disp4 = model.disp4
+                self.disp5 = model.disp5
+                self.disp6 = model.disp6
+                self.disp7 = model.disp7
 
     def build_outputs(self):
         self.build_output()
@@ -160,7 +160,7 @@ class MonodepthModel(object):
     def build_output(self):
         # STORE DISPARITIES
         self.num_scale = 6
-        with tf.compat.v1.variable_scope('disparities'):
+        with tf.variable_scope('disparities'):
             self.disp_est = [self.disp2, self.disp3, self.disp4, self.disp5, self.disp6, self.disp7]
             self.disp_left_est = [tf.expand_dims(d[:, :, :, 0], 3) for d in self.disp_est]
             self.disp_right_est = [tf.expand_dims(d[:, :, :, 1], 3) for d in self.disp_est]
@@ -170,26 +170,26 @@ class MonodepthModel(object):
 
     def finish_build_outputs(self):
         # GENERATE IMAGES
-        with tf.compat.v1.variable_scope('images'):
+        with tf.variable_scope('images'):
             self.left_est = [self.generate_image_left(self.right_pyramid[i], self.disp_left_est[i]) for i in
                              range(self.num_scale)]
             self.right_est = [self.generate_image_right(self.left_pyramid[i], self.disp_right_est[i]) for i in
                               range(self.num_scale)]
 
         # LR CONSISTENCY
-        with tf.compat.v1.variable_scope('left-right'):
+        with tf.variable_scope('left-right'):
             self.right_to_left_disp = [self.generate_image_left(self.disp_right_est[i], self.disp_left_est[i]) for i in
                                        range(self.num_scale)]
             self.left_to_right_disp = [self.generate_image_right(self.disp_left_est[i], self.disp_right_est[i]) for i in
                                        range(self.num_scale)]
 
         # DISPARITY SMOOTHNESS
-        with tf.compat.v1.variable_scope('smoothness'):
+        with tf.variable_scope('smoothness'):
             self.disp_left_smoothness = self.get_disparity_smoothness(self.disp_left_est, self.left_pyramid)
             self.disp_right_smoothness = self.get_disparity_smoothness(self.disp_right_est, self.right_pyramid)
 
     def build_losses(self):
-        with tf.compat.v1.variable_scope('losses', reuse=self.reuse_variables):
+        with tf.variable_scope('losses', reuse=self.reuse_variables):
             # IMAGE RECONSTRUCTION
             # L1
             self.l1_left = [tf.abs(self.left_est[i] - self.left_pyramid[i]) for i in range(self.num_scale)]
