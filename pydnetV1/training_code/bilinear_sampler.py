@@ -17,6 +17,7 @@
 from __future__ import absolute_import, division, print_function
 import tensorflow as tf
 
+
 def bilinear_sampler_1d_h(input_images, x_offset, wrap_mode='border', name='bilinear_sampler', **kwargs):
     def _repeat(x, n_repeats):
         with tf.variable_scope('_repeat'):
@@ -38,7 +39,7 @@ def bilinear_sampler_1d_h(input_images, x_offset, wrap_mode='border', name='bili
             else:
                 return None
 
-            x = tf.clip_by_value(x, 0.0,  _width_f - 1 + 2 * _edge_size)
+            x = tf.clip_by_value(x, 0.0, _width_f - 1 + 2 * _edge_size)
 
             x0_f = tf.floor(x)
             y0_f = tf.floor(y)
@@ -46,7 +47,7 @@ def bilinear_sampler_1d_h(input_images, x_offset, wrap_mode='border', name='bili
 
             x0 = tf.cast(x0_f, tf.int32)
             y0 = tf.cast(y0_f, tf.int32)
-            x1 = tf.cast(tf.minimum(x1_f,  _width_f - 1 + 2 * _edge_size), tf.int32)
+            x1 = tf.cast(tf.minimum(x1_f, _width_f - 1 + 2 * _edge_size), tf.int32)
 
             dim2 = (_width + 2 * _edge_size)
             dim1 = (_width + 2 * _edge_size) * (_height + 2 * _edge_size)
@@ -68,8 +69,8 @@ def bilinear_sampler_1d_h(input_images, x_offset, wrap_mode='border', name='bili
     def _transform(input_images, x_offset):
         with tf.variable_scope('transform'):
             # grid of (x_t, y_t, 1), eq (1) in ref [1]
-            x_t, y_t = tf.meshgrid(tf.linspace(0.0,   _width_f - 1.0,  _width),
-                                   tf.linspace(0.0 , _height_f - 1.0 , _height))
+            x_t, y_t = tf.meshgrid(tf.linspace(0.0, _width_f - 1.0, _width),
+                                   tf.linspace(0.0, _height_f - 1.0, _height))
 
             x_t_flat = tf.reshape(x_t, (1, -1))
             y_t_flat = tf.reshape(y_t, (1, -1))
@@ -89,13 +90,13 @@ def bilinear_sampler_1d_h(input_images, x_offset, wrap_mode='border', name='bili
             return output
 
     with tf.variable_scope(name):
-        _num_batch    = tf.shape(input_images)[0]
-        _height       = tf.shape(input_images)[1]
-        _width        = tf.shape(input_images)[2]
+        _num_batch = tf.shape(input_images)[0]
+        _height = tf.shape(input_images)[1]
+        _width = tf.shape(input_images)[2]
         _num_channels = tf.shape(input_images)[3]
 
         _height_f = tf.cast(_height, tf.float32)
-        _width_f  = tf.cast(_width,  tf.float32)
+        _width_f = tf.cast(_width, tf.float32)
 
         _wrap_mode = wrap_mode
 
