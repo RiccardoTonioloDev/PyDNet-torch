@@ -8,4 +8,5 @@ Used & studied models:
     - `tensorflow=1.13.2`
     - `scipy=1.2`
     - `matplotlib` (the latest version is fine)
+    - `tf_slim` (the latest version is fine)
 - [monodepth - repository](https://github.com/mrharicot/monodepth)
