@@ -21,8 +21,9 @@ from collections import namedtuple
 
 import numpy as np
 import tensorflow as tf
-#import tensorflow.contrib.slim as slim
+# import tensorflow.contrib.slim as slim
 import tf_slim as slim
+import wandb
 
 from bilinear_sampler import *
 from pydnet import *
@@ -39,13 +40,15 @@ monodepth_parameters = namedtuple('parameters',
                                   'alpha_image_loss, '
                                   'disp_gradient_loss_weight, '
                                   'lr_loss_weight, '
-                                  'full_summary')
+                                  'full_summary, '
+                                  'lr, '
+                                  'model_name')
 
 
 class MonodepthModel(object):
     """monodepth model"""
 
-    def __init__(self, params, mode, left, right, reuse_variables=None, model_index=0):
+    def __init__(self, params: monodepth_parameters, mode, left, right, reuse_variables=None, model_index=0):
         self.params = params
         self.mode = mode
         self.left = left
@@ -55,6 +58,13 @@ class MonodepthModel(object):
         self.reuse_variables = reuse_variables
         self.build_model()
         self.build_outputs()
+        self.run = wandb.init(
+            project=params.model_name,
+            config={
+                "num_epochs": params.num_epochs,
+                "learning_rate": params.lr,
+            }
+        )
 
         if self.mode == 'test':
             return
@@ -229,6 +239,12 @@ class MonodepthModel(object):
 
             # TOTAL LOSS
             self.total_loss = self.image_loss + self.params.disp_gradient_loss_weight * self.disp_gradient_loss + self.params.lr_loss_weight * self.lr_loss
+            wandb.log({
+                "image_loss": self.image_loss,
+                "disp_gradient_loss": self.disp_gradient_loss,
+                "lr_loss": self.lr_loss,
+                "total_loss": self.total_loss
+            })
 
     def build_summaries(self):
         # SUMMARIES
