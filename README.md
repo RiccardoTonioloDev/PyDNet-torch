@@ -9,4 +9,5 @@ Used & studied models:
     - `scipy=1.2`
     - `matplotlib` (the latest version is fine)
     - `tf_slim` (the latest version is fine)
+    - `wandb` (the latest version is fine)
 - [monodepth - repository](https://github.com/mrharicot/monodepth)
