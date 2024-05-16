@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH –-job-name="pydnet banchmark"
+#SBATCH –-job-name=pydnet_banchmark
 #SBATCH –-error=../outputfiles/pydnet_benchmarking_tf_v1/pydnet.err
 #SBATCH –-output=../outputfiles/pydnet_benchmarking_tf_v1/hello.out
 #SBATCH –-partition=reserved0
