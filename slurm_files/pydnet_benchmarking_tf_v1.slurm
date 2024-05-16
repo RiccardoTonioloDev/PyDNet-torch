@@ -2,7 +2,7 @@
 #SBATCH –-job-name=”pydnet_bncmk”
 #SBATCH –-error=../outputfiles/pydnet_benchmarking_tf_v1/pydnet.err
 #SBATCH –-output=../outputfiles/pydnet_benchmarking_tf_v1/hello.out
-#SBATCH –-partition=allgroups
+#SBATCH –-partition=reserved0
 #SBATCH –-ntasks=1
 #SBATCH –-mem=32G
 #SBATCH --cpu-per-task=16
