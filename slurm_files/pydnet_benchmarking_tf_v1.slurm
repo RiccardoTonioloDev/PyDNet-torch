@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=pydnet_benchmark
 #SBATCH --error=../outputfiles/pydnet_benchmarking_tf_v1/pydnet.err
-#SBATCH --output=../outputfiles/pydnet_benchmarking_tf_v1/hello.out
+#SBATCH --output=../outputfiles/pydnet_benchmarking_tf_v1/pydnet.out
 #SBATCH --partition=reserved0
 #SBATCH --ntasks=1
 #SBATCH --mem=32G
