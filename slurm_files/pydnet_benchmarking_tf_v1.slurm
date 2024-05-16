@@ -18,6 +18,6 @@ conda activate pydnet_v1
 python ../pydnetV1/training_code/monodepth_main.py \
   --mode train \
   --model_name pydnet_v1_tf \
-  --data_path ../Datasets/kitti \
+  --data_path ../../Datasets/kitti \
   --filenames_file ../pydnetV1/training_code/utils/filenames/kitti_train_files.txt \
   --log_directory ../outputfiles/pydnet_benchmarking_tf_v1/tmp/
