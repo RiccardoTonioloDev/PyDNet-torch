@@ -5,9 +5,9 @@
 #SBATCH --partition=allgroups
 #SBATCH --ntasks=1
 #SBATCH --mem=32G
-#SBATCH --cpus-per-task=16
-#SBATCH --nodelist=dellcuda1
-#SBATCH --gres=gpu:A100-PCIE-40GB:1
+#SBATCH --cpus-per-task=20
+#SBATCH --nodelist=dellsrv1
+#SBATCH --gres=gpu:V100-FHHL-16GB:1
 #SBATCH --time=2-12:00:00
 
 echo "Activating Conda"
