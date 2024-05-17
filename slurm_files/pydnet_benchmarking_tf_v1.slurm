@@ -10,10 +10,12 @@
 #SBATCH --gres=gpu:A100-PCIE-40GB:1
 #SBATCH --time=2-12:00:00
 
+echo "Activating Conda"
 # conda environment activation
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate pydnet_v1
 
+echo "Executing python code"
 # execution of training code
 python /home/rtoniolo/Depth/pydnetV1/training_code/monodepth_main.py \
   --mode train \
