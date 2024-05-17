@@ -15,9 +15,9 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate pydnet_v1
 
 # execution of training code
-python ../pydnetV1/training_code/monodepth_main.py \
+python /home/rtoniolo/Depth/pydnetV1/training_code/monodepth_main.py \
   --mode train \
   --model_name pydnet_v1_tf \
-  --data_path ../../Datasets/kitti \
-  --filenames_file ../pydnetV1/training_code/utils/filenames/kitti_train_files.txt \
-  --log_directory ../outputfiles/pydnet_benchmarking_tf_v1/tmp/
+  --data_path /home/rtoniolo/Datasets/kitti \
+  --filenames_file /home/rtoniolo/Depth/pydnetV1/training_code/utils/filenames/kitti_train_files.txt \
+  --log_directory /home/rtoniolo/Depth/outputfiles/pydnet_benchmarking_tf_v1/tmp/
