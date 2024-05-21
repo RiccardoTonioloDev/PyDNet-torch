@@ -2,12 +2,12 @@
 #SBATCH --job-name=pydnet_benchmark
 #SBATCH --error=../outputfiles/pydnet_benchmarking_tf_v1/pydnet.err
 #SBATCH --output=../outputfiles/pydnet_benchmarking_tf_v1/pydnet.out
-#SBATCH --partition=allgroups
+#SBATCH --partition=testing
 #SBATCH --ntasks=1
 #SBATCH --mem=32G
-#SBATCH --cpus-per-task=20
-#SBATCH --nodelist=dellsrv1
-#SBATCH --gres=gpu:V100-FHHL-16GB:1
+#SBATCH --cpus-per-task=4
+#SBATCH --nodelist=vgpu1-0
+#SBATCH --gres=gpu:NVIDIA-RTX-A5000:1
 #SBATCH --time=2-12:00:00
 
 echo "Activating Conda"
