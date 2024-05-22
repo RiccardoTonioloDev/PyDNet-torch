@@ -2,7 +2,7 @@
 #SBATCH --job-name=pydnet_benchmark
 #SBATCH --error=../outputfiles/pydnet_benchmarking_tf_v1/pydnet.err
 #SBATCH --output=../outputfiles/pydnet_benchmarking_tf_v1/pydnet.out
-#SBATCH --partition=testing
+#SBATCH --partition=allgroups
 #SBATCH --ntasks=1
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=20
