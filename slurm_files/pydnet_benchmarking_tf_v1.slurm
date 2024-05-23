@@ -16,7 +16,7 @@ conda activate pydnet_v1
 
 echo "Executing python code"
 # execution of training code
-python /home/rtoniolo/Depth/pydnetV1/training_code/monodepth_main.py \
+python3 /home/rtoniolo/Depth/pydnetV1/training_code/monodepth_main.py \
   --mode train \
   --model_name pydnet_v1_tf \
   --data_path /home/rtoniolo/Datasets/kitti \

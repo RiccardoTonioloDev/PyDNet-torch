@@ -21,8 +21,7 @@ from collections import namedtuple
 
 import numpy as np
 import tensorflow as tf
-# import tensorflow.contrib.slim as slim
-import tf_slim as slim
+import tensorflow.contrib.slim as slim
 import wandb
 
 from bilinear_sampler import *
@@ -239,12 +238,13 @@ class MonodepthModel(object):
 
             # TOTAL LOSS
             self.total_loss = self.image_loss + self.params.disp_gradient_loss_weight * self.disp_gradient_loss + self.params.lr_loss_weight * self.lr_loss
-            wandb.log({
-                "image_loss": self.image_loss,
-                "disp_gradient_loss": self.disp_gradient_loss,
-                "lr_loss": self.lr_loss,
-                "total_loss": self.total_loss
-            })
+            with tf.Session() as sess:
+                wandb.log({
+                    "image_loss": sess.run(self.image_loss),
+                    "disp_gradient_loss": sess.run(self.disp_gradient_loss),
+                    "lr_loss": sess.run(self.lr_loss),
+                    "total_loss": sess.run(self.total_loss)
+                })
 
     def build_summaries(self):
         # SUMMARIES
