@@ -12,7 +12,6 @@
 
 echo "Activating Conda"
 # conda environment activation
-source ~/anaconda3/etc/profile.d/conda.sh
 conda activate pydnet_v1
 
 echo "Executing python code"
