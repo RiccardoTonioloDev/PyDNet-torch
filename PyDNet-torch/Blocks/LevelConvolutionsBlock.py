@@ -6,7 +6,7 @@ class LevelConvolutionsBlock(nn.Module):
         super(LevelConvolutionsBlock, self).__init__()
 
         self.block = nn.Sequential(
-            nn.Conv2d(in_channels=in_channels, out_channels=96, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=in_channels, out_channels=96, kernel_size=3, stride=1, padding=1),#TODO: occhio al same
             nn.LeakyReLU(),
             nn.Conv2d(in_channels=96, out_channels=64, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(),
