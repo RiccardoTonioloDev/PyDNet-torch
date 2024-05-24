@@ -33,7 +33,7 @@ class MonodepthDataloader(object):
         input_queue = tf.compat.v1.train.string_input_producer(
             [filenames_file], shuffle=False
         )
-        line_reader = tf.TextLineReader()
+        line_reader = tf.compat.v1.TextLineReader()
         _, line = line_reader.read(input_queue)
 
         split_line = tf.string_split([line]).values
