@@ -15,7 +15,7 @@ import tensorflow as tf
 
 
 def string_length_tf(t):
-    return tf.py_func(len, [t], [tf.int64])
+    return tf.compat.v1.py_func(len, [t], [tf.int64])
 
 
 class MonodepthDataloader(object):
