@@ -196,13 +196,6 @@ def train(params):
     lr_loss = tf.math.reduce_mean(tower_lr_losses)
     image_loss = tf.math.reduce_mean(tower_image_losses)
 
-    wandb.log({
-        "image_loss": image_loss.numpy(),
-        "disp_gradient_loss": dispgrad_loss.numpy(),
-        "lr_loss": lr_loss.numpy(),
-        "total_loss": total_loss.numpy()
-    })
-
     tf.compat.v1.summary.scalar("learning_rate", learning_rate)
     tf.compat.v1.summary.scalar("total_loss", total_loss)
     summary_op = tf.compat.v1.summary.merge_all()
@@ -241,7 +234,17 @@ def train(params):
     start_time = time.time()
     for step in range(start_step, num_total_steps):
         before_op_time = time.time()
-        _, loss_value = sess.run([apply_gradient_op, total_loss])
+        _, loss_value, image_loss, lr_loss, dispgrad_loss = sess.run(
+            [apply_gradient_op, total_loss, image_loss, lr_loss, dispgrad_loss]
+        )
+        wandb.log(
+            {
+                "image_loss": image_loss.numpy(),
+                "disp_gradient_loss": dispgrad_loss.numpy(),
+                "lr_loss": lr_loss.numpy(),
+                "total_loss": total_loss.numpy(),
+            }
+        )
         duration = time.time() - before_op_time
         if step and step % 100 == 0:
             examples_per_sec = params.batch_size / duration
