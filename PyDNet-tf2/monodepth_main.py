@@ -234,15 +234,15 @@ def train(params):
     start_time = time.time()
     for step in range(start_step, num_total_steps):
         before_op_time = time.time()
-        _, loss_value, image_loss, lr_loss, dispgrad_loss = sess.run(
-            [apply_gradient_op, total_loss, image_loss, lr_loss, dispgrad_loss]
+        _, loss_value, total_loss, image_loss, lr_loss, dispgrad_loss = sess.run(
+            [apply_gradient_op, image_loss, lr_loss, dispgrad_loss]
         )
         wandb.log(
             {
                 "image_loss": image_loss.item(),
                 "disp_gradient_loss": dispgrad_loss.item(),
                 "lr_loss": lr_loss.item(),
-                "total_loss": total_loss.item(),
+                "total_loss": loss_value.item(),
             }
         )
         duration = time.time() - before_op_time
