@@ -239,10 +239,10 @@ def train(params):
         )
         wandb.log(
             {
-                "image_loss": image_loss.eval(session=sess),
-                "disp_gradient_loss": dispgrad_loss.eval(session=sess),
-                "lr_loss": lr_loss.eval(session=sess),
-                "total_loss": total_loss.eval(session=sess),
+                "image_loss": image_loss.item(),
+                "disp_gradient_loss": dispgrad_loss.item(),
+                "lr_loss": lr_loss.item(),
+                "total_loss": total_loss.item(),
             }
         )
         duration = time.time() - before_op_time
