@@ -51,6 +51,13 @@ class MonodepthModel(object):
         self.left = left
         self.right = right
         self.model_collection = ["model_" + str(model_index)]
+        wandb.init(
+            project=params.model_name,
+            config={
+                "num_epochs": params.num_epochs,
+                "learning_rate": params.lr,
+            },
+        )
 
         self.reuse_variables = reuse_variables
 
@@ -60,15 +67,9 @@ class MonodepthModel(object):
         if self.mode == "test":
             return
 
+
         self.build_losses()
         self.build_summaries()
-        wandb.init(
-            project=params.model_name,
-            config={
-                "num_epochs": params.num_epochs,
-                "learning_rate": params.lr,
-            },
-        )
 
     def gradient_x(self, img):
         gx = img[:, :, :-1, :] - img[:, :, 1:, :]
