@@ -460,10 +460,10 @@ class MonodepthModel(object):
             )
 
             wandb.log({
-                "image_loss": self.image_loss.numpy(),
-                "disp_gradient_loss": self.disp_gradient_loss.numpy(),
-                "lr_loss": self.lr_loss.numpy(),
-                "total_loss": self.total_loss.numpy()
+                "image_loss": tf.Variable(self.image_loss),
+                "disp_gradient_loss": tf.Variable(self.disp_gradient_loss),
+                "lr_loss": tf.Variable(self.lr_loss),
+                "total_loss": tf.Variable(self.total_loss)
             })
 
     def build_summaries(self):
