@@ -18,8 +18,10 @@ from collections import namedtuple
 import numpy as np
 import tensorflow as tf
 from keras import layers
+import wandb
 
 from bilinear_sampler import *
+
 
 monodepth_parameters = namedtuple(
     "parameters",
@@ -34,7 +36,9 @@ monodepth_parameters = namedtuple(
     "alpha_image_loss, "
     "disp_gradient_loss_weight, "
     "lr_loss_weight, "
-    "full_summary",
+    "full_summary,"
+    "lr,"
+    "model_name",
 )
 
 
@@ -58,6 +62,13 @@ class MonodepthModel(object):
 
         self.build_losses()
         self.build_summaries()
+        wandb.init(
+            project=params.model_name,
+            config={
+                "num_epochs": params.num_epochs,
+                "learning_rate": params.lr,
+            },
+        )
 
     def gradient_x(self, img):
         gx = img[:, :, :-1, :] - img[:, :, 1:, :]
@@ -447,6 +458,13 @@ class MonodepthModel(object):
                 + self.params.disp_gradient_loss_weight * self.disp_gradient_loss
                 + self.params.lr_loss_weight * self.lr_loss
             )
+
+            wandb.log({
+                "image_loss": self.image_loss.numpy(),
+                "disp_gradient_loss": self.disp_gradient_loss.numpy(),
+                "lr_loss": self.lr_loss.numpy(),
+                "total_loss": self.total_loss.numpy()
+            })
 
     def build_summaries(self):
         # SUMMARIES

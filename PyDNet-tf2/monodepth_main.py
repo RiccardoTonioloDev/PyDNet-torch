@@ -327,6 +327,8 @@ def main():
         disp_gradient_loss_weight=args.disp_gradient_loss_weight,
         lr_loss_weight=args.lr_loss_weight,
         full_summary=args.full_summary,
+        lr=args.learning_rate,
+        model_name=args.model_name,
     )
 
     if args.mode == "train":
