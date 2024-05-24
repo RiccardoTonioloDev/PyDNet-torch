@@ -164,6 +164,9 @@ def train(params):
 
     tower_grads = []
     tower_losses = []
+    tower_image_losses = []
+    tower_dispgrad_losses = []
+    tower_lr_losses = []
 
     with tf.compat.v1.variable_scope(tf.compat.v1.get_variable_scope()):
         for i in range(args.num_gpus):
@@ -175,6 +178,9 @@ def train(params):
                         params, args.mode, left_splits[i], right_splits[i]
                     )
                     loss = model.total_loss
+                    tower_image_losses.append(model.image_loss)
+                    tower_dispgrad_losses.append(model.disp_gradient_loss)
+                    tower_lr_losses.append(model.lr_loss)
                     tower_losses.append(loss)
 
                     grads = optimizer.compute_gradients(loss)
@@ -185,7 +191,17 @@ def train(params):
         grads, global_step=tf.compat.v1.train.get_global_step()
     )
 
-    total_loss = tf.reduce_mean(tower_losses)
+    total_loss = tf.math.reduce_mean(tower_losses)
+    dispgrad_loss = tf.math.reduce_mean(tower_dispgrad_losses)
+    lr_loss = tf.math.reduce_mean(tower_lr_losses)
+    image_loss = tf.math.reduce_mean(tower_image_losses)
+
+    wandb.log({
+        "image_loss": image_loss.numpy(),
+        "disp_gradient_loss": dispgrad_loss.numpy(),
+        "lr_loss": lr_loss.numpy(),
+        "total_loss": total_loss.numpy()
+    })
 
     tf.compat.v1.summary.scalar("learning_rate", learning_rate)
     tf.compat.v1.summary.scalar("total_loss", total_loss)
@@ -329,6 +345,13 @@ def main():
         full_summary=args.full_summary,
         lr=args.learning_rate,
         model_name=args.model_name,
+    )
+    wandb.init(
+        project=params.model_name,
+        config={
+            "num_epochs": params.num_epochs,
+            "learning_rate": params.lr,
+        },
     )
 
     if args.mode == "train":

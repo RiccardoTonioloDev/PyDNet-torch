@@ -51,13 +51,6 @@ class MonodepthModel(object):
         self.left = left
         self.right = right
         self.model_collection = ["model_" + str(model_index)]
-        wandb.init(
-            project=params.model_name,
-            config={
-                "num_epochs": params.num_epochs,
-                "learning_rate": params.lr,
-            },
-        )
 
         self.reuse_variables = reuse_variables
 
@@ -459,16 +452,6 @@ class MonodepthModel(object):
                 + self.params.disp_gradient_loss_weight * self.disp_gradient_loss
                 + self.params.lr_loss_weight * self.lr_loss
             )
-            print("img loss shape: ", self.image_loss.shape)
-            print("disp loss shape: ", self.disp_gradient_loss.shape)
-            print("lr loss shape: ", self.lr_loss.shape)
-            print("Total loss shape: ", self.total_loss.shape)
-            wandb.log({
-                "image_loss": self.image_loss.numpy(),
-                "disp_gradient_loss": self.disp_gradient_loss.numpy(),
-                "lr_loss": self.lr_loss.numpy(),
-                "total_loss": self.total_loss.numpy()
-            })
 
     def build_summaries(self):
         # SUMMARIES
