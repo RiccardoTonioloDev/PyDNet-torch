@@ -19,5 +19,5 @@ python3 /home/rtoniolo/Depth/PyDNet-tf2/monodepth_main.py \
   --mode train \
   --model_name PyDNet_tf2 \
   --data_path /home/rtoniolo/Datasets/kitti/ \
-  --filenames_file /home/rtoniolo/Depth/PyDNet-tf2/utils/filenames/kitti_train_files.txt \
+  --filenames_file /home/rtoniolo/Depth/PyDNet-tf2/utils/filenames/kitti_train_files_png.txt \
   --log_directory /home/rtoniolo/Depth/outputfiles/pydnet_benchmarking_tf_v1/tmp/
