@@ -9,8 +9,8 @@
 #SBATCH --gres=gpu:A100-PCIE-40GB:1
 #SBATCH --time=2-12:00:00
 
-echo "Activating Conda"
-# conda environment activation
+
+source /home/rtoniolo/.bashrc
 conda activate PyDNet-tf2
 
 echo "Executing python code"
