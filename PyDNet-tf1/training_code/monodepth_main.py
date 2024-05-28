@@ -24,6 +24,7 @@ import tensorflow.contrib.slim as slim
 from monodepth_model import *
 from monodepth_dataloader import *
 from average_gradients import *
+import wandb
 
 parser = argparse.ArgumentParser(description='Monodepth TensorFlow implementation.')
 
@@ -110,6 +111,9 @@ def train(params):
 
         tower_grads = []
         tower_losses = []
+        tower_image_losses = []
+        tower_dispgrad_losses = []
+        tower_lr_losses = []
         reuse_variables = None
         with tf.variable_scope(tf.get_variable_scope()):
             for i in range(args.num_gpus):
@@ -117,6 +121,9 @@ def train(params):
                     model = MonodepthModel(params, args.mode, left_splits[i], right_splits[i], reuse_variables, i)
 
                     loss = model.total_loss
+                    tower_image_losses.append(model.image_loss)
+                    tower_dispgrad_losses.append(model.disp_gradient_loss)
+                    tower_lr_losses.append(model.lr_loss)
                     tower_losses.append(loss)
 
                     reuse_variables = True
@@ -130,6 +137,9 @@ def train(params):
         apply_gradient_op = opt_step.apply_gradients(grads, global_step=global_step)
 
         total_loss = tf.reduce_mean(tower_losses)
+        dispgrad_loss = tf.math.reduce_mean(tower_dispgrad_losses)
+        lr_loss = tf.math.reduce_mean(tower_lr_losses)
+        image_loss = tf.math.reduce_mean(tower_image_losses)
 
         tf.summary.scalar('learning_rate', learning_rate, ['model_0'])
         tf.summary.scalar('total_loss', total_loss, ['model_0'])
@@ -167,7 +177,15 @@ def train(params):
         start_time = time.time()
         for step in range(start_step, num_total_steps):
             before_op_time = time.time()
-            _, loss_value = sess.run([apply_gradient_op, total_loss])
+            _, loss_value, image_loss_value, lr_loss_value, dispgrad_loss_value = sess.run([apply_gradient_op, total_loss,image_loss, lr_loss, dispgrad_loss])
+            wandb.log(
+                {
+                    "image_loss": image_loss_value.item(),
+                    "disp_gradient_loss": dispgrad_loss_value.item(),
+                    "lr_loss": lr_loss_value.item(),
+                    "total_loss": loss_value.item(),
+                }
+            )
             duration = time.time() - before_op_time
             if step and step % 100 == 0:
                 examples_per_sec = params.batch_size / duration
@@ -253,6 +271,13 @@ def main(_):
         lr=args.learning_rate,
         model_name=args.model_name)
 
+    wandb.init(
+        project=params.model_name,
+        config={
+            "num_epochs": params.num_epochs,
+            "learning_rate": params.lr,
+        },
+    )
 
     if args.mode == 'train':
         train(params)

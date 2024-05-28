@@ -1,5 +1,5 @@
 import numpy as np
-import cv, cv2
+import cv2
 import argparse
 from evaluation_utils import *
 
@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser(description='Evaluation on the KITTI dataset')
 parser.add_argument('--split',               type=str,   help='data split, kitti or eigen',         required=True)
 parser.add_argument('--predicted_disp_path', type=str,   help='path to estimated disparities',      required=True)
 parser.add_argument('--gt_path',             type=str,   help='path to ground truth disparities',   required=True)
+parser.add_argument('--filenames_path',             type=str,   help='path to filenames',   required=True)
 parser.add_argument('--min_depth',           type=float, help='minimum depth for evaluation',        default=1e-3)
 parser.add_argument('--max_depth',           type=float, help='maximum depth for evaluation',        default=80)
 parser.add_argument('--eigen_crop',                      help='if set, crops according to Eigen NIPS14',   action='store_true')
@@ -26,7 +27,7 @@ if __name__ == '__main__':
 
     elif args.split == 'eigen':
         num_samples = 697
-        test_files = read_text_lines(args.gt_path + 'eigen_test_files.txt')
+        test_files = read_text_lines(args.filenames_path + 'eigen_test_files_png.txt')
         gt_files, gt_calib, im_sizes, im_files, cams = read_file_data(test_files, args.gt_path)
 
         num_test = len(im_files)

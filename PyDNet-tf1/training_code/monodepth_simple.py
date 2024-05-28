@@ -75,7 +75,7 @@ def test_simple(params):
     threads = tf.train.start_queue_runners(sess=sess, coord=coordinator)
 
     # RESTORE
-    restore_path = args.checkpoint_path.split(".")[0]
+    restore_path = args.checkpoint_path
     train_saver.restore(sess, restore_path)
 
     disp = sess.run(model.disp_left_est[0], feed_dict={left: input_images})
@@ -105,7 +105,9 @@ def main(_):
         alpha_image_loss=0,
         disp_gradient_loss_weight=0,
         lr_loss_weight=0,
-        full_summary=False)
+        full_summary=False,
+        lr=None,
+        model_name=None)
 
     test_simple(params)
 
