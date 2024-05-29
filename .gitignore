@@ -160,3 +160,5 @@ cython_debug/
 .idea/
 
 bash_files/
+
+.DS_Store/
