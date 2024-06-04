@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 import torch
 from torch import nn
 
@@ -245,10 +245,11 @@ def L_total(
     img_batch_pyramid_r: torch.Tensor,
     disp_batch_pyramid_l: torch.Tensor,
     disp_batch_pyramid_r: torch.Tensor,
-    alpha_ap=1,
-    alpha_lr=1,
-    alpha_df=0.1,
-) -> torch.Tensor:
+    weight_SSIM=1,
+    weight_ap=1,
+    weight_lr=1,
+    weight_df=0.1,
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     # Total loss
     It combines the various losses to obtain the total loss
@@ -268,11 +269,12 @@ def L_total(
             `disp_batch_pyramid_r`: List[Tensor],
                 Disparities calculated on right batch.
     """
-    L_ap_tot = L_ap(est_batch_pyramid_l, img_batch_pyramid_l) + L_ap(
-        est_batch_pyramid_r, img_batch_pyramid_r
+    L_ap_tot = L_ap(est_batch_pyramid_l, img_batch_pyramid_l, weight_SSIM) + L_ap(
+        est_batch_pyramid_r, img_batch_pyramid_r, weight_SSIM
     )
     L_df_tot = L_df(disp_batch_pyramid_l, img_batch_pyramid_l) + L_df(
         disp_batch_pyramid_r, img_batch_pyramid_r
     )
     L_lr_tot = L_lr(disp_batch_pyramid_l, disp_batch_pyramid_r)
-    return L_ap_tot * alpha_ap + L_df_tot * alpha_df + L_lr_tot * alpha_lr
+    L_total = L_ap_tot * weight_ap + L_df_tot * weight_df + L_lr_tot * weight_lr
+    return L_total, L_ap_tot, L_df_tot, L_lr_tot

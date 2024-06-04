@@ -11,14 +11,17 @@ class Config:
     image_height = 256
     shuffle_batch = True
 
-    lr_loss_weight = 1
+    weight_lr = 1
     # Left-right consistency weight in the total loss calculation
 
-    alpha_image_loss = 0.85
-    # Weight between SSIM and L1 in the image loss
+    weight_ap = 1
+    # Reconstruction error loss weight in the total loss calculation
 
-    disp_gradient_loss_weight = 0.1
+    weight_df = 0.1
     # Disparity gradient weight in the total loss calculation
+
+    weight_SSIM = 0.85
+    # Weight between SSIM and L1 in the image loss
 
     output_direcotry = "./outputfiles/outputs/"
     # Output directory to test disparities

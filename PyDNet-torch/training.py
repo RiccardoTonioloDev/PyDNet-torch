@@ -1,5 +1,5 @@
 import torch
-import torch.nn as nn
+import wandb
 import torch.optim as optim
 from KittiDataset import KittiDataset
 from Pydnet import Pydnet
@@ -10,6 +10,15 @@ from Losses import L_total, generate_image_left, generate_image_right
 def train():
     # Configurations
     config = Config()
+
+    # Configuring wandb
+    wandb.init(
+        project=config.model_name,
+        config={
+            "num_epochs": config.num_epochs,
+            "learning_rate": config.learning_rate,
+        },
+    )
 
     # Data
     train_dataset = KittiDataset(
@@ -55,22 +64,35 @@ def train():
                 for img, disp in zip(left_img_batch_pyramid, left_disp_pyramid)
             ]
             # Calculating the loss based on the total loss function
-            loss = L_total(
+            total_loss, img_loss, disp_grad_loss, lr_loss = L_total(
                 est_batch_pyramid_left,
                 est_batch_pyramid_right,
                 left_img_batch_pyramid,
                 right_img_batch_pyramid,
                 left_disp_pyramid,
                 right_disp_pyramid,
+                weigh_SSIM=config.weight_SSIM,
+                weight_ap=config.weight_ap,
+                weight_lr=config.weight_lr,
+                weight_df=config.weight_df,
             )
             # Doing the forward pass
             optimizer.zero_grad()
-            loss.backward()
+            total_loss.backward()
             optimizer.step()
+
+            wandb.log(
+                {
+                    "image_loss": img_loss.item(),
+                    "disp_gradient_loss": disp_grad_loss.item(),
+                    "lr_loss": lr_loss.item(),
+                    "total_loss": total_loss.item(),
+                }
+            )
 
         # Logging stats
         print(
-            f"Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}, Learning rate: {config.learning_rate * lr_lambda(epoch)}"
+            f"Epoch [{epoch+1}/{num_epochs}], Loss: {total_loss.item():.4f}, Learning rate: {config.learning_rate * lr_lambda(epoch)}"
         )
 
         # Saving checkpoint
