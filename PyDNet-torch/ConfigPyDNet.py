@@ -1,7 +1,8 @@
-class Config:
+class ConfigHomeLab:
     model_name = "PyDNet-V1-torch"
     data_path = "/media/Volume/KITTI/"
-    filenames_file_training = "./filenames/"
+    filenames_file_training = "./filenames/eigen_train_files_png.txt"
+    filenames_file_testing = "./filenames/eigen_test_files_png.txt"
     input_height = 256
     input_width = 512
     batch_size = 8
@@ -29,3 +30,11 @@ class Config:
 
     retrain = True
     # If True it retrains the model without using checkpoints
+
+
+class Config:
+    def __init__(self):
+        pass
+
+    def get_homelab_configuration(self):
+        return ConfigHomeLab()

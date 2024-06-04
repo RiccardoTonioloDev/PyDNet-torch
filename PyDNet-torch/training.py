@@ -9,7 +9,7 @@ from Losses import L_total, generate_image_left, generate_image_right
 
 def train():
     # Configurations
-    config = Config()
+    config = Config().get_homelab_configuration()
 
     # Configuring wandb
     wandb.init(
