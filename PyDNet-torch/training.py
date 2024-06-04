@@ -3,7 +3,7 @@ import wandb
 import torch.optim as optim
 from KittiDataset import KittiDataset
 from Pydnet import Pydnet
-from ConfigPyDNet import Config
+from Config import Config
 from Losses import L_total, generate_image_left, generate_image_right
 
 
