@@ -51,10 +51,29 @@ def train():
             # Infering disparities based on left and right image batches
             left_disp_pyramid = pydnet(left_img_batch)
             right_disp_pyramid = pydnet(right_img_batch)
+            [
+                print(f"Level {i+1} left disp size: {disp.size()}")
+                for i, disp in enumerate(left_disp_pyramid)
+            ]
+            [
+                print(f"Level {i+1} right disp size: {disp.size()}")
+                for i, disp in enumerate(right_disp_pyramid)
+            ]
             # Creating pyramid of various resolutions for left and right image batches
-            left_img_batch_pyramid = pydnet.scale_pyramid(left_img_batch)
-            right_img_batch_pyramid = pydnet.scale_pyramid(right_img_batch)
+            left_img_batch_pyramid = pydnet.scale_pyramid(left_img_batch, 6)
+            right_img_batch_pyramid = pydnet.scale_pyramid(right_img_batch, 6)
+            [
+                print(f"Level {i+1} right img size: {img.size()}")
+                for i, img in enumerate(right_img_batch_pyramid)
+            ]
+            [
+                print(f"Level {i+1} left img size: {img.size()}")
+                for i, img in enumerate(left_img_batch_pyramid)
+            ]
             # Using disparities to generate corresponding left and right warped image batches (at various resolutions)
+            print(
+                "########################   generating images   ############################"
+            )
             est_batch_pyramid_left = [
                 generate_image_left(img, disp)
                 for img, disp in zip(right_img_batch_pyramid, right_disp_pyramid)

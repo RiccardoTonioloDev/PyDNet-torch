@@ -30,7 +30,7 @@ class Pydnet(nn.Module):
 
         # LEVEL 6
         self.downsizing_block_6 = DownsizingBlock(128, 192)
-        self.conv_block_6 = LevelConvolutionsBlock(192 + 8)
+        self.conv_block_6 = LevelConvolutionsBlock(192)
 
         self.level_activations = nn.Sigmoid()
 
@@ -92,7 +92,7 @@ class Pydnet(nn.Module):
         scaled_imgs = []
         _, _, h, w = img_batch.shape
         for i in range(num_scales):
-            ratio = 2**i
+            ratio = 2 ** (i + 1)
             nh = h // ratio
             nw = w // ratio
             scaled_img = nn.functional.interpolate(

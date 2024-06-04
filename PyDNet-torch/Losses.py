@@ -149,7 +149,7 @@ def bilinear_sampler_1d_h(
     A bilinear sampler in 1D horizontally.
         `img_batch`: [B, C, H, W]
             Original image to warp by sampling.
-        `disp_batch`: [B, 1, H, W]
+        `disp_batch`: [B, C, H, W]
             Disparities for sampling the original image to generate the warped one.
     """
     B, _, H, W = img_batch.shape
@@ -163,7 +163,8 @@ def bilinear_sampler_1d_h(
     )  # [B, H, W]
 
     # Add disparity to x-coordinates
-    x_shifts = x_base + disp_batch.unsqueeze(1)
+    print("x_base size: ", x_base.size())
+    x_shifts = x_base + disp_batch
 
     # Normalize grid coordinates to [-1, 1]
     x_norm = 2 * (x_shifts / (W - 1)) - 1
@@ -188,6 +189,8 @@ def generate_image_left(
         `right_disp_batch`: [B, 1, H, W]
             The corresponding disparities to use for right images.
     """
+    print("right image batch size: ", right_img_batch.size())
+    print("right disp batch size: ", right_disp_batch.size())
     right_img_batch = right_img_batch.to(torch.float32)
     right_disp_batch = -right_disp_batch.to(torch.float32)
     return bilinear_sampler_1d_h(right_img_batch, right_disp_batch)
@@ -203,6 +206,8 @@ def generate_image_right(
         `left_disp_batch`: [B, 1, H, W]
             The corresponding disparities to use for left images.
     """
+    print("left image batch size: ", left_img_batch.size())
+    print("left disp batch size: ", left_disp_batch.size())
     left_img_batch = left_img_batch.to(torch.float32)
     left_disp_batch = left_disp_batch.to(torch.float32)
     return bilinear_sampler_1d_h(left_img_batch, left_disp_batch)
