@@ -60,7 +60,7 @@ def train():
                 for img, disp in zip(right_img_batch_pyramid, right_disp_pyramid)
             ]
             est_batch_pyramid_right = [
-                generate_image_left(img, disp)
+                generate_image_right(img, disp)
                 for img, disp in zip(left_img_batch_pyramid, left_disp_pyramid)
             ]
             # Calculating the loss based on the total loss function
