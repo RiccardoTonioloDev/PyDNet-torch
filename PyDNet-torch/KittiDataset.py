@@ -131,10 +131,10 @@ class KittiDataset(Dataset):
         )
         return dataloader
 
-        @staticmethod
-        def from_left_to_left_batch(left_image_tensor: torch.Tensor) -> torch.Tensor:
-            """
-            To be used in testing, where we only do evaluations on the left image
-            """
-            left_image_tensor_flipped = transforms.functional.hflip(left_image_tensor)
-            return torch.stack([left_image_tensor, left_image_tensor_flipped], dim=0)
+    @staticmethod
+    def from_left_to_left_batch(left_image_tensor: torch.Tensor) -> torch.Tensor:
+        """
+        To be used in testing, where we only do evaluations on the left image
+        """
+        left_image_tensor_flipped = transforms.functional.hflip(left_image_tensor)
+        return torch.stack([left_image_tensor, left_image_tensor_flipped], dim=0)

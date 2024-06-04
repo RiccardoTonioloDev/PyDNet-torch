@@ -7,6 +7,9 @@ class Config:
     batch_size = 8
     num_epochs = 50
     learning_rate = 1e-4
+    image_width = 512
+    image_height = 256
+    shuffle_batch = True
 
     lr_loss_weight = 1
     # Left-right consistency weight in the total loss calculation

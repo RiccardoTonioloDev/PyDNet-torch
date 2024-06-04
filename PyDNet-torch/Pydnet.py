@@ -34,7 +34,9 @@ class Pydnet(nn.Module):
 
         self.level_activations = nn.Sigmoid()
 
-        self.upsizing = nn.ConvTranspose2d(in_channels=8, out_channels=8, kernel_size=2, stride=2)
+        self.upsizing = nn.ConvTranspose2d(
+            in_channels=8, out_channels=8, kernel_size=2, stride=2
+        )
 
     def forward(self, x):
         # Level's starting blocks
@@ -85,3 +87,16 @@ class Pydnet(nn.Module):
         disp1 = self.level_activations(conv1b)
 
         return [disp1, disp2, disp3, disp4, disp5, disp6]
+
+    def scale_pyramid(self, img_batch, num_scales):
+        scaled_imgs = []
+        _, _, h, w = img_batch.shape
+        for i in range(num_scales):
+            ratio = 2**i
+            nh = h // ratio
+            nw = w // ratio
+            scaled_img = nn.functional.interpolate(
+                img_batch, size=(nh, nw), mode="area"
+            )
+            scaled_imgs.append(scaled_img)
+        return scaled_imgs
