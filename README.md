@@ -70,8 +70,10 @@ pip install tensorflow scipy matplotlib wandb
 conda create -n <environmentName>
 # Activate the conda environment
 conda activate <environmentName>
-# Install the required packages (I'll use pip)
-conda install pytorch torchvision torchaudio pytorch-cuda=[11.8, 12.1] -c pytorch -c nvidia
+# Install the required packages (I'll use conda for torch)
+conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+# Install the required packages (I'll use pip for everything else)
+pip install wanb pandas
 ```
 
 > IMPORTANT: choose the cuda version based on the cuda version of your system.
