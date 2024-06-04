@@ -127,7 +127,11 @@ class KittiDataset(Dataset):
         pin_memory: bool = True,
     ) -> DataLoader:
         dataloader = DataLoader(
-            self, batch_size, shuffle_batch, num_workers, pin_memory=pin_memory
+            self,
+            batch_size,
+            shuffle_batch,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
         )
         return dataloader
 

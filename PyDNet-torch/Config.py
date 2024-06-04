@@ -1,6 +1,6 @@
 class ConfigHomeLab:
     model_name = "PyDNet-V1-torch"
-    data_path = "/media/Volume/KITTI/"
+    data_path = "/media/riccardo-toniolo/Volume/KITTI/"
     filenames_file_training = "./filenames/eigen_train_files_png.txt"
     filenames_file_testing = "./filenames/eigen_test_files_png.txt"
     input_height = 256

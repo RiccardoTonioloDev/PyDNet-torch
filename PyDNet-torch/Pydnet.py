@@ -40,12 +40,12 @@ class Pydnet(nn.Module):
 
     def forward(self, x):
         # Level's starting blocks
-        conv1 = self.downsizing_block_1(x)
-        conv2 = self.downsizing_block_2(conv1)
-        conv3 = self.downsizing_block_3(conv2)
-        conv4 = self.downsizing_block_4(conv3)
-        conv5 = self.downsizing_block_5(conv4)
-        conv6 = self.downsizing_block_6(conv5)
+        conv1 = self.downsizing_block_1(x)  # [8, 16, 128, 256]
+        conv2 = self.downsizing_block_2(conv1)  # [8, 32, 64, 128]
+        conv3 = self.downsizing_block_3(conv2)  # [8, 64, 32, 64]
+        conv4 = self.downsizing_block_4(conv3)  # [8, 96, 16, 32]
+        conv5 = self.downsizing_block_5(conv4)  # [8, 128, 8, 16]
+        conv6 = self.downsizing_block_6(conv5)  # [8, 192, 4, 8]
 
         # LEVEL 6
         conv6b = self.conv_block_6(conv6)

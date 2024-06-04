@@ -1,0 +1,90 @@
+{
+    "os": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "heartbeatAt": "2024-06-04T13:09:54.688564",
+    "startedAt": "2024-06-04T13:09:54.084945",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "--mode=train"
+    ],
+    "state": "running",
+    "program": "/home/riccardo-toniolo/Documents/Depth/PyDNet-torch/main.py",
+    "codePathLocal": "main.py",
+    "codePath": "PyDNet-torch/main.py",
+    "git": {
+        "remote": "https://github.com/RiccardoTonioloDev/Depth.git",
+        "commit": "c18888de6060c5f3c477f4fc815bfb1b120c4976"
+    },
+    "email": "ssctonioloriccardo@gmail.com",
+    "root": "/home/riccardo-toniolo/Documents/Depth",
+    "host": "riccardo-toniolo",
+    "username": "riccardo-toniolo",
+    "executable": "/home/riccardo-toniolo/anaconda3/envs/PyDNet-torch/bin/python3",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 4003.990875,
+        "min": 800.0,
+        "max": 4200.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 4000.009,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 4024.784,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 4004.263,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 4000.762,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 4001.558,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 4042.925,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 4094.466,
+            "min": 800.0,
+            "max": 4200.0
+        },
+        {
+            "current": 4053.795,
+            "min": 800.0,
+            "max": 4200.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 228.16759872436523,
+            "used": 57.97726058959961
+        }
+    },
+    "gpu": "NVIDIA GeForce GTX 1070",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce GTX 1070",
+            "memory_total": 8589934592
+        }
+    ],
+    "memory": {
+        "total": 31.309612274169922
+    }
+}
