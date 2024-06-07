@@ -149,7 +149,7 @@ def bilinear_sampler_1d_h(
     A bilinear sampler in 1D horizontally.
         `img_batch`: [B, C, H, W]
             Original image to warp by sampling.
-        `disp_batch`: [B, C, H, W]
+        `disp_batch`: [B, H, W]
             Disparities for sampling the original image to generate the warped one.
     """
     B, _, H, W = img_batch.shape
@@ -163,7 +163,6 @@ def bilinear_sampler_1d_h(
     )  # [B, H, W]
 
     # Add disparity to x-coordinates
-    print("x_base size: ", x_base.size())
     x_shifts = x_base + disp_batch
 
     # Normalize grid coordinates to [-1, 1]
@@ -186,7 +185,7 @@ def generate_image_left(
     It generates a left image, starting from the right one, using disparities to sample.
         `right_img_batch`: [B, C, H, W]
             Right images to warp into left ones using the corresponding disparities.
-        `right_disp_batch`: [B, 1, H, W]
+        `right_disp_batch`: [B, H, W]
             The corresponding disparities to use for right images.
     """
     print("right image batch size: ", right_img_batch.size())
@@ -203,7 +202,7 @@ def generate_image_right(
     It generates a right image, starting from the left one, using disparities to sample.
         `left_img_batch`: [B, C, H, W]
             Left images to warp into right ones using the corresponding disparities.
-        `left_disp_batch`: [B, 1, H, W]
+        `left_disp_batch`: [B, H, W]
             The corresponding disparities to use for left images.
     """
     print("left image batch size: ", left_img_batch.size())
@@ -219,17 +218,17 @@ def L_lr(
 ) -> torch.Tensor:
     """
     # Left-righ consistency loss
-        `disp_l_batch_pyramid`: List[Tensor[B, 1, H, W]]
+        `disp_l_batch_pyramid`: List[Tensor[B, H, W]]
             Disparities for left images (at different scales).
-        `disp_r_batch_pyramid`: List[Tensor[B, 1, H, W]]
+        `disp_r_batch_pyramid`: List[Tensor[B, H, W]]
             Disparities for right images (at different scales).
     """
     right_to_left_disp = [
-        generate_image_left(disp_r, disp_l)  # [B, 1, H, W]
+        generate_image_left(disp_r, disp_l)  # [B, H, W]
         for disp_r, disp_l in zip(disp_r_batch_pyramid, disp_l_batch_pyramid)
     ]
     left_to_right_disp = [
-        generate_image_right(disp_l, disp_r)  # [B, 1, H, W]
+        generate_image_right(disp_l, disp_r)  # [B, H, W]
         for disp_l, disp_r in zip(disp_l_batch_pyramid, disp_r_batch_pyramid)
     ]
     lr_left_loss = [
@@ -254,7 +253,9 @@ def L_total(
     weight_ap=1,
     weight_lr=1,
     weight_df=0.1,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[
+    torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+]:  # TODO: controllare dimensioni dei tensori nel training
     """
     # Total loss
     It combines the various losses to obtain the total loss

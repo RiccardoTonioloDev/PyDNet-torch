@@ -90,7 +90,7 @@ def train():
                 right_img_batch_pyramid,
                 left_disp_pyramid,
                 right_disp_pyramid,
-                weigh_SSIM=config.weight_SSIM,
+                weight_SSIM=config.weight_SSIM,
                 weight_ap=config.weight_ap,
                 weight_lr=config.weight_lr,
                 weight_df=config.weight_df,
