@@ -163,7 +163,7 @@ def bilinear_sampler_1d_h(
     )  # [B, H, W]
 
     # Add disparity to x-coordinates
-    x_shifts = x_base + disp_batch
+    x_shifts = x_base + disp_batch.squeeze(1)
 
     # Normalize grid coordinates to [-1, 1]
     x_norm = 2 * (x_shifts / (W - 1)) - 1
@@ -185,11 +185,9 @@ def generate_image_left(
     It generates a left image, starting from the right one, using disparities to sample.
         `right_img_batch`: [B, C, H, W]
             Right images to warp into left ones using the corresponding disparities.
-        `right_disp_batch`: [B, H, W]
+        `right_disp_batch`: [B, C, H, W]
             The corresponding disparities to use for right images.
     """
-    print("right image batch size: ", right_img_batch.size())
-    print("right disp batch size: ", right_disp_batch.size())
     right_img_batch = right_img_batch.to(torch.float32)
     right_disp_batch = -right_disp_batch.to(torch.float32)
     return bilinear_sampler_1d_h(right_img_batch, right_disp_batch)
@@ -202,11 +200,9 @@ def generate_image_right(
     It generates a right image, starting from the left one, using disparities to sample.
         `left_img_batch`: [B, C, H, W]
             Left images to warp into right ones using the corresponding disparities.
-        `left_disp_batch`: [B, H, W]
+        `left_disp_batch`: [B, C, H, W]
             The corresponding disparities to use for left images.
     """
-    print("left image batch size: ", left_img_batch.size())
-    print("left disp batch size: ", left_disp_batch.size())
     left_img_batch = left_img_batch.to(torch.float32)
     left_disp_batch = left_disp_batch.to(torch.float32)
     return bilinear_sampler_1d_h(left_img_batch, left_disp_batch)
@@ -278,8 +274,12 @@ def L_total(
     L_ap_tot = L_ap(est_batch_pyramid_l, img_batch_pyramid_l, weight_SSIM) + L_ap(
         est_batch_pyramid_r, img_batch_pyramid_r, weight_SSIM
     )
-    L_df_tot = L_df(disp_batch_pyramid_l, img_batch_pyramid_l) + L_df(
-        disp_batch_pyramid_r, img_batch_pyramid_r
+    L_df_tot = L_df(
+        disp_batch_pyramid_l,
+        img_batch_pyramid_l,
+    ) + L_df(
+        disp_batch_pyramid_r,
+        img_batch_pyramid_r,
     )
     L_lr_tot = L_lr(disp_batch_pyramid_l, disp_batch_pyramid_r)
     L_total = L_ap_tot * weight_ap + L_df_tot * weight_df + L_lr_tot * weight_lr

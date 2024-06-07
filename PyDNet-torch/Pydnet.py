@@ -89,12 +89,12 @@ class Pydnet(nn.Module):
         disp1 = self.level_activations(conv1b)
 
         return [
-            disp1[:, 0, :, :],
-            disp2[:, 0, :, :],
-            disp3[:, 0, :, :],
-            disp4[:, 0, :, :],
-            disp5[:, 0, :, :],
-            disp6[:, 0, :, :],
+            disp1[:, 0, :, :].unsqueeze(1),
+            disp2[:, 0, :, :].unsqueeze(1),
+            disp3[:, 0, :, :].unsqueeze(1),
+            disp4[:, 0, :, :].unsqueeze(1),
+            disp5[:, 0, :, :].unsqueeze(1),
+            disp6[:, 0, :, :].unsqueeze(1),
         ]
 
     def scale_pyramid(self, img_batch, num_scales):

@@ -1,3 +1,4 @@
+import time
 import torch
 import wandb
 import torch.optim as optim
@@ -10,6 +11,7 @@ from Losses import L_total, generate_image_left, generate_image_right
 def train():
     # Configurations
     config = Config().get_homelab_configuration()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Configuring wandb
     wandb.init(
@@ -32,7 +34,9 @@ def train():
     )
 
     # Model
-    pydnet = Pydnet()
+    pydnet = Pydnet().to(device)
+    num_of_params = sum(p.numel() for p in pydnet.parameters())
+    print("Total number of parameters: ", num_of_params)
     # Optimizer
     optimizer = optim.Adam(
         pydnet.parameters(), lr=config.learning_rate, betas=(0.9, 0.999), eps=1e-8
@@ -45,35 +49,30 @@ def train():
     )
     lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_lambda)
 
+    steps_per_epoch = len(train_dataloader)
+    total_steps = steps_per_epoch * num_epochs
+
+    start_time = time.time() / 3600  # in hours
+
     # Training
     for epoch in range(num_epochs):
         for i, (left_img_batch, right_img_batch) in enumerate(train_dataloader):
+            left_img_batch, right_img_batch = left_img_batch.to(
+                device
+            ), right_img_batch.to(device)
             # Infering disparities based on left and right image batches
-            left_disp_pyramid = pydnet(left_img_batch)
-            right_disp_pyramid = pydnet(right_img_batch)
-            [
-                print(f"Level {i+1} left disp size: {disp.size()}")
-                for i, disp in enumerate(left_disp_pyramid)
-            ]
-            [
-                print(f"Level {i+1} right disp size: {disp.size()}")
-                for i, disp in enumerate(right_disp_pyramid)
-            ]
+            left_disp_pyramid = pydnet(left_img_batch)  # [B, H, W]
+            right_disp_pyramid = pydnet(right_img_batch)  # [B, H, W]
+
             # Creating pyramid of various resolutions for left and right image batches
-            left_img_batch_pyramid = pydnet.scale_pyramid(left_img_batch, 6)
-            right_img_batch_pyramid = pydnet.scale_pyramid(right_img_batch, 6)
-            [
-                print(f"Level {i+1} right img size: {img.size()}")
-                for i, img in enumerate(right_img_batch_pyramid)
-            ]
-            [
-                print(f"Level {i+1} left img size: {img.size()}")
-                for i, img in enumerate(left_img_batch_pyramid)
-            ]
+            left_img_batch_pyramid = pydnet.scale_pyramid(
+                left_img_batch, 6
+            )  # [B, C, H, W]
+            right_img_batch_pyramid = pydnet.scale_pyramid(
+                right_img_batch, 6
+            )  # [B, C, H, W]
+
             # Using disparities to generate corresponding left and right warped image batches (at various resolutions)
-            print(
-                "########################   generating images   ############################"
-            )
             est_batch_pyramid_left = [
                 generate_image_left(img, disp)
                 for img, disp in zip(right_img_batch_pyramid, right_disp_pyramid)
@@ -109,9 +108,13 @@ def train():
                 }
             )
 
+        elapsed_time = (time.time() / 3600) - start_time  # in hours
+        steps_done = steps_per_epoch * (epoch + 1)
+        steps_to_do = total_steps - steps_done
+        time_remaining = (elapsed_time / steps_done) * steps_to_do
         # Logging stats
         print(
-            f"Epoch [{epoch+1}/{num_epochs}], Loss: {total_loss.item():.4f}, Learning rate: {config.learning_rate * lr_lambda(epoch)}"
+            f"Epoch [{epoch+1}/{num_epochs}]| Loss: {total_loss.item():.4f}| Learning rate: {config.learning_rate * lr_lambda(epoch)}| Elapsed time: {elapsed_time:.2f}h| Time to finish: ~{time_remaining}h|"
         )
 
         # Saving checkpoint
