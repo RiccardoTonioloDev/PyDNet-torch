@@ -10,29 +10,31 @@ class Pydnet(nn.Module):
 
         # LEVEL 1
         self.downsizing_block_1 = DownsizingBlock(3, 16)
-        self.conv_block_1 = LevelConvolutionsBlock(16 + 8)
+        self.conv_block_1 = LevelConvolutionsBlock(16 + 8)  # TODO: HAI AGGIUNTO 8
 
         # LEVEL 2
         self.downsizing_block_2 = DownsizingBlock(16, 32)
-        self.conv_block_2 = LevelConvolutionsBlock(32 + 8)
+        self.conv_block_2 = LevelConvolutionsBlock(32 + 8)  # TODO: HAI AGGIUNTO 8
 
         # LEVEL 3
         self.downsizing_block_3 = DownsizingBlock(32, 64)
-        self.conv_block_3 = LevelConvolutionsBlock(64 + 8)
+        self.conv_block_3 = LevelConvolutionsBlock(64 + 8)  # TODO: HAI AGGIUNTO 8
 
         # LEVEL 4
         self.downsizing_block_4 = DownsizingBlock(64, 96)
-        self.conv_block_4 = LevelConvolutionsBlock(96 + 8)
+        self.conv_block_4 = LevelConvolutionsBlock(96 + 8)  # TODO: HAI AGGIUNTO 8
 
         # LEVEL 5
         self.downsizing_block_5 = DownsizingBlock(96, 128)
-        self.conv_block_5 = LevelConvolutionsBlock(128 + 8)
+        self.conv_block_5 = LevelConvolutionsBlock(128 + 8)  # TODO: HAI AGGIUNTO 8
 
         # LEVEL 6
         self.downsizing_block_6 = DownsizingBlock(128, 192)
         self.conv_block_6 = LevelConvolutionsBlock(192)
 
-        self.level_activations = nn.Sigmoid()
+        self.level_activations = (
+            nn.Sigmoid()
+        )  # TODO: questa non mi da un solo canale di output
 
         self.upsizing = nn.ConvTranspose2d(
             in_channels=8, out_channels=8, kernel_size=2, stride=2
