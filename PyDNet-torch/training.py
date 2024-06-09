@@ -1,4 +1,5 @@
 import time
+from typing import Literal
 import torch
 import wandb
 import torch.optim as optim
@@ -8,9 +9,9 @@ from Config import Config
 from Losses import L_total, generate_image_left, generate_image_right
 
 
-def train():
+def train(env: Literal["HomeLab", "Cluster"]):
     # Configurations
-    config = Config().get_homelab_configuration()
+    config = Config(env).get_configuration()()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Configuring wandb
