@@ -2,11 +2,11 @@
 #SBATCH --job-name=pydnet_torch
 #SBATCH --error=../PyDNet-torch/outputs/pydnet_torch.err
 #SBATCH --output=../PyDNet-torch/outputs/pydnet_torch.out
-#SBATCH --partition=allgroups
+#SBATCH --partition=testing
 #SBATCH --mem=32G
-#SBATCH --cpus-per-task=16
-#SBATCH --nodelist=dellcuda1
-#SBATCH --gres=gpu:A100-PCIE-40GB:1
+#SBATCH --cpus-per-task=6
+#SBATCH --nodelist=vgpu6-0
+#SBATCH --gres=gpu:1
 #SBATCH --time=2-00:00:00
 
 
