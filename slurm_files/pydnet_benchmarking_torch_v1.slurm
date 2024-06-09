@@ -3,9 +3,9 @@
 #SBATCH --error=../PyDNet-torch/outputs/pydnet_torch.err
 #SBATCH --output=../PyDNet-torch/outputs/pydnet_torch.out
 #SBATCH --partition=testing
-#SBATCH --mem=32G
+#SBATCH --mem=16G
 #SBATCH --cpus-per-task=6
-#SBATCH --nodelist=vgpu6-0
+#SBATCH --nodelist=vgpu7-0
 #SBATCH --gres=gpu:1
 #SBATCH --time=2-00:00:00
 
