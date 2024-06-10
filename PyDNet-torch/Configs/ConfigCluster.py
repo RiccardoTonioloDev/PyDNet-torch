@@ -1,8 +1,12 @@
 class ConfigCluster:
     model_name = "PyDNet-V1-torch"
     data_path = "/home/rtoniolo/Datasets/kitti/"
-    filenames_file_training = "./filenames/eigen_train_files_png.txt"
-    filenames_file_testing = "./filenames/eigen_test_files_png.txt"
+    filenames_file_training = (
+        "/home/rtoniolo/Depth/PyDNet-torch/filenames/eigen_train_files_png.txt"
+    )
+    filenames_file_testing = (
+        "/home/rtoniolo/Depth/PyDNet-torch/filenames/eigen_test_files_png.txt"
+    )
     input_height = 256
     input_width = 512
     batch_size = 8
@@ -24,9 +28,9 @@ class ConfigCluster:
     weight_SSIM = 0.85
     # Weight between SSIM and L1 in the image loss
 
-    output_direcotry = "./outputfiles/outputs/"
+    output_direcotry = "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/outputs/"
     # Output directory to test disparities
-    checkpoint_path = "./outputfiles/checkpoints/"
+    checkpoint_path = "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/"
 
     retrain = True
     # If True it retrains the model without using checkpoints

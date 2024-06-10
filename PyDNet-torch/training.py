@@ -66,7 +66,7 @@ def train(env: Literal["HomeLab", "Cluster"]):
 
     start_time = time.time() / 3600  # in hours
 
-    min_loss = torch.Tensor([0])
+    min_loss = torch.Tensor([0]).to(device)
 
     # Training
     for epoch in range(num_epochs):
