@@ -1,6 +1,6 @@
+from Configs.ConfigHomeLab import ConfigHomeLab
+from Configs.ConfigCluster import ConfigCluster
 from typing import Literal
-from Configs import ConfigHomeLab
-from Configs import ConfigCluster
 
 
 class Config:

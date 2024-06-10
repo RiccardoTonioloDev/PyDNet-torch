@@ -17,9 +17,9 @@ def L1_loss(est_batch: torch.Tensor, img_batch: torch.Tensor) -> torch.Tensor:
 def SSIM_loss(est_batch: torch.Tensor, img_batch: torch.Tensor) -> torch.Tensor:
     """
     # Structural Similarity Index Measure
-    `img_batch_1`: Tensor[B, C, H, W]
+    `est_batch`: Tensor[B, C, H, W]
        The warped image batch
-    `img_batch_2`: Tensor[B, C, H, W]
+    `img_batch`: Tensor[B, C, H, W]
         The original image batch
     """
     C1 = 0.01**2
@@ -59,19 +59,19 @@ def L_ap(
             Corresponding image batch at different scales
     """
     SSIM_pyramid = [
-        SSIM_loss(est, img).mean(dim=(1, 2, 3)) * alpha
+        SSIM_loss(est, img).mean() * alpha
         for est, img in zip(est_batch_pyramid, img_batch_pyramid)
     ]  #  List[Tensor[B]]
     #  Doing the SSIM on each image of the batch at the same time, for each resolution
     L1_pyramid = [
-        L1_loss(est, img).mean(dim=(1, 2, 3)) * (1 - alpha)
+        L1_loss(est, img).mean() * (1 - alpha)
         for est, img in zip(est_batch_pyramid, img_batch_pyramid)
     ]  # List[Tensor[B]]
     #  Doing the L1 on each image of the batch at the same time, for each resolution
     weighted_sum = [ssim + l1 for ssim, l1 in zip(SSIM_pyramid, L1_pyramid)]
     #  Adding each SSIM value with the corresponding L1 value (values are already weighted)
 
-    return torch.mean(sum(weighted_sum))  #  Tensor[Scalar]
+    return sum(weighted_sum)  #  Tensor[Scalar]
 
 
 def gradient_x(tensor: torch.Tensor):
@@ -96,8 +96,6 @@ def disparity_smoothness(
         `image_batch`: [B, C, H, W]
             Images batch of the corresponding side
     """
-    # TODO: Variazione: nel modello originale usa solamente il gradient_X (in quanto l'immagine
-    # dovrebbe differire unicamente sull'asse orizontale)
     disparity_grad_x = torch.abs(gradient_x(disparity_batch))  # [B, 1, H, W - 1]
     disparity_grad_y = torch.abs(gradient_y(disparity_batch))  # [B, 1, H - 1, W]
 
@@ -107,18 +105,19 @@ def disparity_smoothness(
     weights_x = torch.exp(
         -torch.mean(torch.abs(image_grad_x), 1, keepdim=True)
     )  # [B, 1, H, W - 1]
-    weights_y = torch.exp(
-        -torch.mean(torch.abs(image_grad_y), 1, keepdim=True)
-    )  # [B, 1, H - 1, W]
+    # weights_y = torch.exp( # IN TEORIA NON VENGONO UTILIZZATI I PESI IN ALTEZZA NEL CALCOLO
+    #    -torch.mean(torch.abs(image_grad_y), 1, keepdim=True)
+    # )  # [B, 1, H - 1, W]
 
     smoothness_x = disparity_grad_x * weights_x  # [B, 1, H, W - 1]
-    smoothness_y = disparity_grad_y * weights_y  # [B, 1, H - 1, W]
+    # smoothness_y = disparity_grad_y * weights_y  # [B, 1, H - 1, W]
 
-    smoothness_sum = (
-        smoothness_x[:, :, :-1, :] + smoothness_y[:, :, :, :-1]
-    )  # [B, 1, H - 1, W - 1]
+    # smoothness_sum = (
+    #    smoothness_x[:, :, :-1, :] + smoothness_y[:, :, :, :-1]
+    # )  # [B, 1, H - 1, W - 1]
 
-    return torch.mean(torch.mean(smoothness_sum, dim=(2, 3)))  # Tensor[Scalar]
+    # return torch.mean(torch.mean(smoothness_sum, dim=(2, 3)))  # Tensor[Scalar]
+    return torch.mean(torch.abs(smoothness_x))  # Tensor[Scalar]
 
 
 def L_df(
@@ -149,7 +148,7 @@ def bilinear_sampler_1d_h(
     A bilinear sampler in 1D horizontally.
         `img_batch`: [B, C, H, W]
             Original image to warp by sampling.
-        `disp_batch`: [B, H, W]
+        `disp_batch`: [B, 1, H, W]
             Disparities for sampling the original image to generate the warped one.
     """
     B, _, H, W = img_batch.shape
@@ -185,7 +184,7 @@ def generate_image_left(
     It generates a left image, starting from the right one, using disparities to sample.
         `right_img_batch`: [B, C, H, W]
             Right images to warp into left ones using the corresponding disparities.
-        `right_disp_batch`: [B, C, H, W]
+        `right_disp_batch`: [B, 1, H, W]
             The corresponding disparities to use for right images.
     """
     right_img_batch = right_img_batch.to(torch.float32)
@@ -200,7 +199,7 @@ def generate_image_right(
     It generates a right image, starting from the left one, using disparities to sample.
         `left_img_batch`: [B, C, H, W]
             Left images to warp into right ones using the corresponding disparities.
-        `left_disp_batch`: [B, C, H, W]
+        `left_disp_batch`: [B, 1, H, W]
             The corresponding disparities to use for left images.
     """
     left_img_batch = left_img_batch.to(torch.float32)
@@ -214,25 +213,25 @@ def L_lr(
 ) -> torch.Tensor:
     """
     # Left-righ consistency loss
-        `disp_l_batch_pyramid`: List[Tensor[B, H, W]]
+        `disp_l_batch_pyramid`: List[Tensor[B, 1, H, W]]
             Disparities for left images (at different scales).
-        `disp_r_batch_pyramid`: List[Tensor[B, H, W]]
+        `disp_r_batch_pyramid`: List[Tensor[B, 1, H, W]]
             Disparities for right images (at different scales).
     """
     right_to_left_disp = [
-        generate_image_left(disp_r, disp_l)  # [B, H, W]
+        generate_image_left(disp_r, disp_l)  # [B, 1, H, W]
         for disp_r, disp_l in zip(disp_r_batch_pyramid, disp_l_batch_pyramid)
     ]
     left_to_right_disp = [
-        generate_image_right(disp_l, disp_r)  # [B, H, W]
+        generate_image_right(disp_l, disp_r)  # [B, 1, H, W]
         for disp_l, disp_r in zip(disp_l_batch_pyramid, disp_r_batch_pyramid)
     ]
     lr_left_loss = [
-        (rtl_disp - disp_l).abs().mean(dim=(2, 3)).mean()
+        torch.mean(torch.abs(rtl_disp - disp_l))
         for rtl_disp, disp_l in zip(right_to_left_disp, disp_l_batch_pyramid)
     ]
     lr_right_loss = [
-        (ltr_disp - disp_r).abs().mean(dim=(2, 3)).mean()
+        torch.mean(torch.abs(ltr_disp - disp_r))
         for ltr_disp, disp_r in zip(left_to_right_disp, disp_r_batch_pyramid)
     ]
     return sum(lr_left_loss + lr_right_loss)

@@ -1,4 +1,4 @@
-class ConfigHomeLab:
+class ConfigCluster:
     model_name = "PyDNet-V1-torch"
     data_path = "/home/rtoniolo/Datasets/kitti/"
     filenames_file_training = "./filenames/eigen_train_files_png.txt"
