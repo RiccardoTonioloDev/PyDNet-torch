@@ -1,5 +1,5 @@
 from torch import nn
-from xavier_initializer import xavier_init
+from .Xavier_initializer import xavier_init
 
 
 class LevelConvolutionsBlock(nn.Module):

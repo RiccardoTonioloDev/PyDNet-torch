@@ -2,7 +2,7 @@ from Blocks.DownsizingBlock import DownsizingBlock
 from Blocks.LevelConvolutionsBlock import LevelConvolutionsBlock
 import torch.nn as nn
 import torch
-from Blocks.xavier_initializer import xavier_init
+from Blocks.Xavier_initializer import xavier_init
 
 
 class Pydnet(nn.Module):
@@ -35,15 +35,45 @@ class Pydnet(nn.Module):
 
         self.level_activations = nn.Sigmoid()
 
-        self.__upsizing_block = nn.ConvTranspose2d(
+        self.__upsizing_block_6 = nn.ConvTranspose2d(
             in_channels=8, out_channels=8, kernel_size=2, stride=2
         )
-        xavier_init(self.__upsizing_block)
-        self.upsizing = nn.Sequential(
-            [
-                self.__upsizing_block,
-                nn.LeakyReLU(0.2),
-            ]
+        xavier_init(self.__upsizing_block_6)
+        self.upsizing_6 = nn.Sequential(
+            self.__upsizing_block_6,
+            nn.LeakyReLU(0.2),
+        )
+        self.__upsizing_block_5 = nn.ConvTranspose2d(
+            in_channels=8, out_channels=8, kernel_size=2, stride=2
+        )
+        xavier_init(self.__upsizing_block_5)
+        self.upsizing_5 = nn.Sequential(
+            self.__upsizing_block_5,
+            nn.LeakyReLU(0.2),
+        )
+        self.__upsizing_block_4 = nn.ConvTranspose2d(
+            in_channels=8, out_channels=8, kernel_size=2, stride=2
+        )
+        xavier_init(self.__upsizing_block_4)
+        self.upsizing_4 = nn.Sequential(
+            self.__upsizing_block_4,
+            nn.LeakyReLU(0.2),
+        )
+        self.__upsizing_block_3 = nn.ConvTranspose2d(
+            in_channels=8, out_channels=8, kernel_size=2, stride=2
+        )
+        xavier_init(self.__upsizing_block_3)
+        self.upsizing_3 = nn.Sequential(
+            self.__upsizing_block_3,
+            nn.LeakyReLU(0.2),
+        )
+        self.__upsizing_block_2 = nn.ConvTranspose2d(
+            in_channels=8, out_channels=8, kernel_size=2, stride=2
+        )
+        xavier_init(self.__upsizing_block_2)
+        self.upsizing_2 = nn.Sequential(
+            self.__upsizing_block_2,
+            nn.LeakyReLU(0.2),
         )
 
     def forward(self, x):
@@ -59,35 +89,35 @@ class Pydnet(nn.Module):
         conv6b = self.conv_block_6(conv6)
         disp6 = self.level_activations(conv6b)
 
-        conv6b = self.upsizing(conv6b)
+        conv6b = self.upsizing_6(conv6b)
 
         # LEVEL 5
         concat5 = torch.cat((conv5, conv6b), 1)
         conv5b = self.conv_block_5(concat5)
         disp5 = self.level_activations(conv5b)
 
-        conv5b = self.upsizing(conv5b)
+        conv5b = self.upsizing_5(conv5b)
 
         # LEVEL 4
         concat4 = torch.cat((conv4, conv5b), 1)
         conv4b = self.conv_block_4(concat4)
         disp4 = self.level_activations(conv4b)
 
-        conv4b = self.upsizing(conv4b)
+        conv4b = self.upsizing_4(conv4b)
 
         # LEVEL 3
         concat3 = torch.cat((conv3, conv4b), 1)
         conv3b = self.conv_block_3(concat3)
         disp3 = self.level_activations(conv3b)
 
-        conv3b = self.upsizing(conv3b)
+        conv3b = self.upsizing_3(conv3b)
 
         # LEVEL 2
         concat2 = torch.cat((conv2, conv3b), 1)
         conv2b = self.conv_block_2(concat2)
         disp2 = self.level_activations(conv2b)
 
-        conv2b = self.upsizing(conv2b)
+        conv2b = self.upsizing_2(conv2b)
 
         # LEVEL 1
         concat1 = torch.cat((conv1, conv2b), 1)
