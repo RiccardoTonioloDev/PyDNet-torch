@@ -1,4 +1,5 @@
 from Blocks.DownsizingBlock import DownsizingBlock
+from Blocks.UpsizingBlock import UpsizingBlock
 from Blocks.LevelConvolutionsBlock import LevelConvolutionsBlock
 import torch.nn as nn
 import torch
@@ -35,46 +36,11 @@ class Pydnet(nn.Module):
 
         self.level_activations = nn.Sigmoid()
 
-        self.__upsizing_block_6 = nn.ConvTranspose2d(
-            in_channels=8, out_channels=8, kernel_size=2, stride=2
-        )
-        xavier_init(self.__upsizing_block_6)
-        self.upsizing_6 = nn.Sequential(
-            self.__upsizing_block_6,
-            nn.LeakyReLU(0.2),
-        )
-        self.__upsizing_block_5 = nn.ConvTranspose2d(
-            in_channels=8, out_channels=8, kernel_size=2, stride=2
-        )
-        xavier_init(self.__upsizing_block_5)
-        self.upsizing_5 = nn.Sequential(
-            self.__upsizing_block_5,
-            nn.LeakyReLU(0.2),
-        )
-        self.__upsizing_block_4 = nn.ConvTranspose2d(
-            in_channels=8, out_channels=8, kernel_size=2, stride=2
-        )
-        xavier_init(self.__upsizing_block_4)
-        self.upsizing_4 = nn.Sequential(
-            self.__upsizing_block_4,
-            nn.LeakyReLU(0.2),
-        )
-        self.__upsizing_block_3 = nn.ConvTranspose2d(
-            in_channels=8, out_channels=8, kernel_size=2, stride=2
-        )
-        xavier_init(self.__upsizing_block_3)
-        self.upsizing_3 = nn.Sequential(
-            self.__upsizing_block_3,
-            nn.LeakyReLU(0.2),
-        )
-        self.__upsizing_block_2 = nn.ConvTranspose2d(
-            in_channels=8, out_channels=8, kernel_size=2, stride=2
-        )
-        xavier_init(self.__upsizing_block_2)
-        self.upsizing_2 = nn.Sequential(
-            self.__upsizing_block_2,
-            nn.LeakyReLU(0.2),
-        )
+        self.upsizing_6 = UpsizingBlock(8, 8)
+        self.upsizing_5 = UpsizingBlock(8, 8)
+        self.upsizing_4 = UpsizingBlock(8, 8)
+        self.upsizing_3 = UpsizingBlock(8, 8)
+        self.upsizing_2 = UpsizingBlock(8, 8)
 
     def forward(self, x):
         # Level's starting blocks

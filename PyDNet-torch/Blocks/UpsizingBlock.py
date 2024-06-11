@@ -4,6 +4,7 @@ from .Xavier_initializer import xavier_init
 
 class UpsizingBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int):
+        super(UpsizingBlock, self).__init__()
         self.__deconv = nn.ConvTranspose2d(
             in_channels=in_channels, out_channels=out_channels, kernel_size=2, stride=2
         )
