@@ -2,6 +2,7 @@ from Blocks.DownsizingBlock import DownsizingBlock
 from Blocks.LevelConvolutionsBlock import LevelConvolutionsBlock
 import torch.nn as nn
 import torch
+from Blocks.xavier_initializer import xavier_init
 
 
 class Pydnet(nn.Module):
@@ -34,8 +35,15 @@ class Pydnet(nn.Module):
 
         self.level_activations = nn.Sigmoid()
 
-        self.upsizing = nn.ConvTranspose2d(
+        self.__upsizing_block = nn.ConvTranspose2d(
             in_channels=8, out_channels=8, kernel_size=2, stride=2
+        )
+        xavier_init(self.__upsizing_block)
+        self.upsizing = nn.Sequential(
+            [
+                self.__upsizing_block,
+                nn.LeakyReLU(0.2),
+            ]
         )
 
     def forward(self, x):
@@ -87,12 +95,12 @@ class Pydnet(nn.Module):
         disp1 = self.level_activations(conv1b)
 
         return [
-            disp1[:, 0, :, :].unsqueeze(1),
-            disp2[:, 0, :, :].unsqueeze(1),
-            disp3[:, 0, :, :].unsqueeze(1),
-            disp4[:, 0, :, :].unsqueeze(1),
-            disp5[:, 0, :, :].unsqueeze(1),
-            disp6[:, 0, :, :].unsqueeze(1),
+            disp1[:, 0, :, :].unsqueeze(1) * 0.3,
+            disp2[:, 0, :, :].unsqueeze(1) * 0.3,
+            disp3[:, 0, :, :].unsqueeze(1) * 0.3,
+            disp4[:, 0, :, :].unsqueeze(1) * 0.3,
+            disp5[:, 0, :, :].unsqueeze(1) * 0.3,
+            disp6[:, 0, :, :].unsqueeze(1) * 0.3,
         ]
 
     def scale_pyramid(self, img_batch, num_scales):

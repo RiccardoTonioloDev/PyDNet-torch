@@ -248,9 +248,7 @@ def L_total(
     weight_ap=1,
     weight_lr=1,
     weight_df=0.1,
-) -> Tuple[
-    torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
-]:  # TODO: controllare dimensioni dei tensori nel training
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     # Total loss
     It combines the various losses to obtain the total loss

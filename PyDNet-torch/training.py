@@ -129,7 +129,7 @@ def train(env: Literal["HomeLab", "Cluster"]):
                 time_remaining = (elapsed_time / steps_done) * steps_to_do
                 # Logging stats
                 print(
-                    f"Epoch [{epoch+1}/{num_epochs}]| Steps: {steps_done}|Loss: {total_loss.item():.4f}| Learning rate: {config.learning_rate * lr_lambda(epoch)}| Elapsed time: {elapsed_time:.2f}h| Time to finish: ~{time_remaining}h|"
+                    f"Epoch [{epoch+1}/{num_epochs}]| Steps: {steps_done}| Loss: {total_loss.item():.4f}| Learning rate: {config.learning_rate * lr_lambda(epoch)}| Elapsed time: {elapsed_time:.2f}h| Time to finish: ~{time_remaining}h|"
                 )
 
         eval_loss = eval(test_dataset, config, pydnet, device)
