@@ -34,13 +34,14 @@ class Pydnet(nn.Module):
         self.downsizing_block_6 = DownsizingBlock(128, 192)
         self.conv_block_6 = LevelConvolutionsBlock(192)
 
-        self.level_activations = nn.Sigmoid()
-
         self.upsizing_6 = UpsizingBlock(8, 8)
         self.upsizing_5 = UpsizingBlock(8, 8)
         self.upsizing_4 = UpsizingBlock(8, 8)
         self.upsizing_3 = UpsizingBlock(8, 8)
         self.upsizing_2 = UpsizingBlock(8, 8)
+
+    def level_activations(self, x: torch.Tensor) -> torch.Tensor:
+        return 0.3 * torch.sigmoid(x[:, :2, :, :])
 
     def forward(self, x):
         # Level's starting blocks
@@ -91,12 +92,12 @@ class Pydnet(nn.Module):
         disp1 = self.level_activations(conv1b)
 
         return [
-            disp1[:, 0, :, :].unsqueeze(1) * 0.3,
-            disp2[:, 0, :, :].unsqueeze(1) * 0.3,
-            disp3[:, 0, :, :].unsqueeze(1) * 0.3,
-            disp4[:, 0, :, :].unsqueeze(1) * 0.3,
-            disp5[:, 0, :, :].unsqueeze(1) * 0.3,
-            disp6[:, 0, :, :].unsqueeze(1) * 0.3,
+            disp1,
+            disp2,
+            disp3,
+            disp4,
+            disp5,
+            disp6,
         ]
 
     def scale_pyramid(self, img_batch, num_scales):

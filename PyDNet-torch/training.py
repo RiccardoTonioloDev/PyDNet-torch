@@ -1,6 +1,6 @@
 import os
 import time
-from typing import Literal
+from typing import List, Literal
 import torch
 import torch.utils
 import torch.utils.data
@@ -75,9 +75,17 @@ def train(env: Literal["HomeLab", "Cluster"]):
             left_img_batch, right_img_batch = left_img_batch.to(
                 device
             ), right_img_batch.to(device)
+
+            # Model input
+            model_input = torch.cat([left_img_batch, right_img_batch], 1)
             # Infering disparities based on left and right image batches
-            left_disp_pyramid = pydnet(left_img_batch)  # [B, H, W]
-            right_disp_pyramid = pydnet(right_img_batch)  # [B, H, W]
+            model_output: List[torch.Tensor] = pydnet(model_input)
+            left_disp_pyramid = [mo[:, 0, :, :].unsqueeze(1) for mo in model_output]
+            right_disp_pyramid = [mo[:, 1, :, :].unsqueeze(1) for mo in model_output]
+
+            # Infering disparities based on left and right image batches
+            left_disp_pyramid = pydnet(left_img_batch)
+            right_disp_pyramid = pydnet(right_img_batch)
 
             # Creating pyramid of various resolutions for left and right image batches
             left_img_batch_pyramid = pydnet.scale_pyramid(
@@ -90,11 +98,11 @@ def train(env: Literal["HomeLab", "Cluster"]):
             # Using disparities to generate corresponding left and right warped image batches (at various resolutions)
             est_batch_pyramid_left = [
                 generate_image_left(img, disp)
-                for img, disp in zip(right_img_batch_pyramid, right_disp_pyramid)
+                for img, disp in zip(right_img_batch_pyramid, left_disp_pyramid)
             ]
             est_batch_pyramid_right = [
                 generate_image_right(img, disp)
-                for img, disp in zip(left_img_batch_pyramid, left_disp_pyramid)
+                for img, disp in zip(left_img_batch_pyramid, right_disp_pyramid)
             ]
             # Calculating the loss based on the total loss function
             total_loss, img_loss, disp_grad_loss, lr_loss = L_total(
