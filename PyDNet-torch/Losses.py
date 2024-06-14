@@ -1,6 +1,7 @@
 from typing import List, Tuple
 import torch
 from torch import nn
+from torch.nn.functional import pad
 
 
 def L1_loss(est_batch: torch.Tensor, img_batch: torch.Tensor) -> torch.Tensor:
@@ -68,10 +69,8 @@ def L_ap(
         for est, img in zip(est_batch_pyramid, img_batch_pyramid)
     ]  # List[Tensor[B]]
     #  Doing the L1 on each image of the batch at the same time, for each resolution
-    weighted_sum = [ssim + l1 for ssim, l1 in zip(SSIM_pyramid, L1_pyramid)]
-    #  Adding each SSIM value with the corresponding L1 value (values are already weighted)
 
-    return sum(weighted_sum)  #  Tensor[Scalar]
+    return sum(SSIM_pyramid + L1_pyramid)  #  Tensor[Scalar]
 
 
 def gradient_x(tensor: torch.Tensor):
@@ -142,39 +141,80 @@ def L_df(
 
 
 def bilinear_sampler_1d_h(
-    img_batch: torch.Tensor, disp_batch: torch.Tensor
-) -> torch.Tensor:
-    """
-    A bilinear sampler in 1D horizontally.
-        `img_batch`: [B, C, H, W]
-            Original image to warp by sampling.
-        `disp_batch`: [B, 1, H, W]
-            Disparities for sampling the original image to generate the warped one.
-    """
-    B, _, H, W = img_batch.shape
+    input_images, x_offset, wrap_mode="border", tensor_type="torch.cuda.FloatTensor"
+):
+    num_batch, num_channels, height, width = input_images.size()
 
-    # Create a mesh grid
-    x_base = (
-        torch.linspace(0, W - 1, W).view(1, 1, W).expand(B, H, W).to(disp_batch.device)
-    )  # [B, H, W]
-    y_base = (
-        torch.linspace(0, H - 1, H).view(1, H, 1).expand(B, H, W).to(disp_batch.device)
-    )  # [B, H, W]
+    # Handle both texture border types
+    edge_size = 0
+    if wrap_mode == "border":
+        edge_size = 1
+        # Pad last and second-to-last dimensions by 1 from both sides
+        input_images = pad(input_images, (1, 1, 1, 1))
+    elif wrap_mode == "edge":
+        edge_size = 0
+    else:
+        return None
 
-    # Add disparity to x-coordinates
-    x_shifts = x_base + disp_batch.squeeze(1)
+    # Put channels to slowest dimension and flatten batch with respect to others
+    input_images = input_images.permute(1, 0, 2, 3).contiguous()
+    im_flat = input_images.reshape(num_channels, -1)
 
-    # Normalize grid coordinates to [-1, 1]
-    x_norm = 2 * (x_shifts / (W - 1)) - 1
-    y_norm = 2 * (y_base / (H - 1)) - 1
+    # Create meshgrid for pixel indicies (PyTorch doesn't have dedicated
+    # meshgrid function)
+    x = torch.linspace(0, width - 1, width).repeat(height, 1).type(tensor_type)
+    y = (
+        torch.linspace(0, height - 1, height)
+        .repeat(width, 1)
+        .transpose(0, 1)
+        .type(tensor_type)
+    )
+    # Take padding into account
+    x = x + edge_size
+    y = y + edge_size
+    # Flatten and repeat for each image in the batch
+    x = x.reshape(-1).repeat(1, num_batch)
+    y = y.reshape(-1).repeat(1, num_batch)
 
-    # Stack and permute to create grid for grid_sample
-    grid = torch.stack((x_norm, y_norm), dim=3)  # [B, H, W, 2]
+    # Now we want to sample pixels with indicies shifted by disparity in X direction
+    # For that we convert disparity from % to pixels and add to X indicies
+    x = x + x_offset.contiguous().reshape(-1) * width
+    # Make sure we don't go outside of image
+    x = torch.clamp(x, 0.0, width - 1 + 2 * edge_size)
+    # Round disparity to sample from integer-valued pixel grid
+    y0 = torch.floor(y)
+    # In X direction round both down and up to apply linear interpolation
+    # between them later
+    x0 = torch.floor(x)
+    x1 = x0 + 1
+    # After rounding up we might go outside the image boundaries again
+    x1 = x1.clamp(max=(width - 1 + 2 * edge_size))
 
-    # Sample the image with bilinear interpolation
-    output = nn.functional.grid_sample(img_batch, grid, align_corners=True)
+    # Calculate indices to draw from flattened version of image batch
+    dim2 = width + 2 * edge_size
+    dim1 = (width + 2 * edge_size) * (height + 2 * edge_size)
+    # Set offsets for each image in the batch
+    base = dim1 * torch.arange(num_batch).type(tensor_type)
+    base = base.reshape(-1, 1).repeat(1, height * width).reshape(-1)
+    # One pixel shift in Y  direction equals dim2 shift in flattened array
+    base_y0 = base + y0 * dim2
+    # Add two versions of shifts in X direction separately
+    idx_l = base_y0 + x0
+    idx_r = base_y0 + x1
 
-    return output  # [B, C, H, W]
+    # Sample pixels from images
+    pix_l = im_flat.gather(1, idx_l.repeat(num_channels, 1).long())
+    pix_r = im_flat.gather(1, idx_r.repeat(num_channels, 1).long())
+
+    # Apply linear interpolation to account for fractional offsets
+    weight_l = x1 - x
+    weight_r = x - x0
+    output = weight_l * pix_l + weight_r * pix_r
+
+    # Reshape back into image batch and permute back to (N,C,H,W) shape
+    output = output.reshape(num_channels, num_batch, height, width).permute(1, 0, 2, 3)
+
+    return output
 
 
 def generate_image_left(
@@ -187,9 +227,7 @@ def generate_image_left(
         `right_disp_batch`: [B, 1, H, W]
             The corresponding disparities to use for right images.
     """
-    right_img_batch = right_img_batch.to(torch.float32)
-    right_disp_batch = -right_disp_batch.to(torch.float32)
-    return bilinear_sampler_1d_h(right_img_batch, right_disp_batch)
+    return bilinear_sampler_1d_h(right_img_batch, -right_disp_batch)
 
 
 def generate_image_right(
@@ -202,8 +240,6 @@ def generate_image_right(
         `left_disp_batch`: [B, 1, H, W]
             The corresponding disparities to use for left images.
     """
-    left_img_batch = left_img_batch.to(torch.float32)
-    left_disp_batch = left_disp_batch.to(torch.float32)
     return bilinear_sampler_1d_h(left_img_batch, left_disp_batch)
 
 
@@ -244,7 +280,7 @@ def L_total(
     img_batch_pyramid_r: torch.Tensor,
     disp_batch_pyramid_l: torch.Tensor,
     disp_batch_pyramid_r: torch.Tensor,
-    weight_SSIM=1,
+    weight_SSIM=0.85,
     weight_ap=1,
     weight_lr=1,
     weight_df=0.1,

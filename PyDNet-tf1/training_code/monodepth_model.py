@@ -164,11 +164,7 @@ class MonodepthModel(object):
                     self.model_input = tf.concat([self.left, self.right], 3)
                 else:
                     self.model_input = self.left
-
-                print(
-                    "Shape tensore in input (teoricamente concatenato)",
-                    self.model_input.shape,
-                )
+                # do stereo is set on False, so here it's providing in the model input only the left ones
                 # build model
                 placeholders = {"im0": self.model_input}
                 model = pydnet(placeholders)

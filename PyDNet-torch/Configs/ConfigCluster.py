@@ -34,3 +34,5 @@ class ConfigCluster:
 
     retrain = True
     # If True it retrains the model without using checkpoints
+
+    debug = False

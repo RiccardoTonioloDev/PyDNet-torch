@@ -31,7 +31,8 @@ class KittiDataset(Dataset):
         self.data_path = data_path
         self.image_tensorizer = transforms.Compose(
             [
-                transforms.ToTensor(),
+                transforms.ToImage(),
+                transforms.ToDtype(torch.float32, scale=True),
                 transforms.Resize(
                     (image_height, image_width),
                     interpolation=transforms.InterpolationMode.BILINEAR,
@@ -40,6 +41,9 @@ class KittiDataset(Dataset):
         )  # It allows us to transform each image retrieved from the dataset in a tensor
         self.mode = mode
         self.transform = transform
+        self.__horizontal_flipper = transforms.Compose(
+            [transforms.RandomHorizontalFlip(p=1)]
+        )
 
     def __len__(self) -> int:
         num_rows, _ = self.filenames_df.shape
@@ -80,8 +84,9 @@ class KittiDataset(Dataset):
         if self.mode == "train":
             # Randomly flipping images
             if random.random() > 0.5:
-                left_image_tensor = transforms.functional.hflip(right_image_tensor)
-                right_image_tensor = transforms.functional.hflip(left_image_tensor)
+                left_image_tensor_copy = left_image_tensor
+                left_image_tensor = self.__horizontal_flipper(right_image_tensor)
+                right_image_tensor = self.__horizontal_flipper(left_image_tensor_copy)
 
             # Randomly augmenting images
             if random.random() > 0.5:

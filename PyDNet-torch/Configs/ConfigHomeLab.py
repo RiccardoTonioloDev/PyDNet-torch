@@ -30,3 +30,5 @@ class ConfigHomeLab:
 
     retrain = True
     # If True it retrains the model without using checkpoints
+
+    debug = True

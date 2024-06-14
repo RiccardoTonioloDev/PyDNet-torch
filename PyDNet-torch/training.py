@@ -13,6 +13,39 @@ from Losses import L_total, generate_image_left, generate_image_right
 from Configs.ConfigHomeLab import ConfigHomeLab
 from Configs.ConfigCluster import ConfigCluster
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def imshow(left_img, est_img, right_img, disparity):
+    left_img = left_img / 2 + 0.5  # de-normalizza
+    est_img = est_img / 2 + 0.5  # de-normalizza
+    right_img = right_img / 2 + 0.5  # de-normalizza
+
+    npimg1 = (
+        left_img.detach().cpu().numpy()
+    )  # Sposta l'immagine su CPU e convertila in numpy
+    npimg2 = (
+        est_img.detach().cpu().numpy()
+    )  # Sposta l'immagine su CPU e convertila in numpy
+    npimg3 = (
+        right_img.detach().cpu().numpy()
+    )  # Sposta l'immagine su CPU e convertila in numpy
+    np_disp = (
+        disparity.detach().cpu().numpy()
+    )  # Sposta la disparità su CPU e convertila in numpy
+
+    fig, axs = plt.subplots(1, 4, figsize=(24, 6))
+    axs[0].imshow(np.transpose(npimg1, (1, 2, 0)))
+    axs[0].set_title("Left Image")
+    axs[1].imshow(np.transpose(npimg2, (1, 2, 0)))
+    axs[1].set_title("Estimated Image")
+    axs[2].imshow(np.transpose(npimg3, (1, 2, 0)))
+    axs[2].set_title("Right Image")
+    axs[3].imshow(np_disp[0], cmap="viridis", vmin=0, vmax=1)
+    axs[3].set_title("Disparity Heatmap")
+    plt.show()
+
 
 def train(env: Literal["HomeLab", "Cluster"]):
     # Configurations
@@ -77,15 +110,15 @@ def train(env: Literal["HomeLab", "Cluster"]):
             ), right_img_batch.to(device)
 
             # Model input
-            model_input = torch.cat([left_img_batch, right_img_batch], 1)
+            # model_input = torch.cat([left_img_batch, right_img_batch], 1)
             # Infering disparities based on left and right image batches
-            model_output: List[torch.Tensor] = pydnet(model_input)
+            model_output: List[torch.Tensor] = pydnet(left_img_batch)
             left_disp_pyramid = [mo[:, 0, :, :].unsqueeze(1) for mo in model_output]
             right_disp_pyramid = [mo[:, 1, :, :].unsqueeze(1) for mo in model_output]
 
             # Infering disparities based on left and right image batches
-            left_disp_pyramid = pydnet(left_img_batch)
-            right_disp_pyramid = pydnet(right_img_batch)
+            # left_disp_pyramid = pydnet(left_img_batch)
+            # right_disp_pyramid = pydnet(right_img_batch)
 
             # Creating pyramid of various resolutions for left and right image batches
             left_img_batch_pyramid = pydnet.scale_pyramid(
@@ -128,17 +161,30 @@ def train(env: Literal["HomeLab", "Cluster"]):
                     "disp_gradient_loss": disp_grad_loss.item(),
                     "lr_loss": lr_loss.item(),
                     "total_loss": total_loss.item(),
+                    "avg_disparity_in_first_level": left_disp_pyramid[0]
+                    .detach()
+                    .cpu()
+                    .numpy()
+                    .mean(),
                 }
             )
-            if i % 100 == 0 and i != 0:
+            steps_done = i + epoch * steps_per_epoch
+
+            if steps_done % 100 == 0 and i != 0:
                 elapsed_time = (time.time() / 3600) - start_time  # in hours
-                steps_done = i + epoch * steps_per_epoch
                 steps_to_do = total_steps - steps_done
                 time_remaining = (elapsed_time / steps_done) * steps_to_do
                 # Logging stats
                 print(
                     f"Epoch [{epoch+1}/{num_epochs}]| Steps: {steps_done}| Loss: {total_loss.item():.4f}| Learning rate: {config.learning_rate * lr_lambda(epoch)}| Elapsed time: {elapsed_time:.2f}h| Time to finish: ~{time_remaining}h|"
                 )
+                if config.debug:
+                    imshow(
+                        left_img_batch_pyramid[1][0],
+                        est_batch_pyramid_left[1][0],
+                        right_img_batch_pyramid[1][0],
+                        left_disp_pyramid[1][0],
+                    )
 
         eval_loss = eval(test_dataset, config, pydnet, device)
         if min_loss > eval_loss:
