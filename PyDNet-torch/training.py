@@ -99,6 +99,7 @@ def train(env: Literal["HomeLab", "Cluster"]):
 
     start_time = time.time() / 3600  # in hours
 
+    is_first_evaluation = True
     min_loss = torch.Tensor([0]).to(device)
 
     # Training
@@ -175,7 +176,8 @@ def train(env: Literal["HomeLab", "Cluster"]):
                 )
 
         eval_loss = eval(test_dataset, config, pydnet, device)
-        if min_loss > eval_loss:
+        if is_first_evaluation or min_loss > eval_loss:
+            is_first_evaluation = False
             min_loss = eval_loss
 
             state = {
