@@ -170,6 +170,16 @@ def train(env: Literal["HomeLab", "Cluster"]):
             )
             steps_done = i + epoch * steps_per_epoch
 
+            if False and steps_done % 10 == 0 and i != 0:
+                [
+                    imshow(
+                        left_img_batch_pyramid[i][0],
+                        est_batch_pyramid_left[i][0],
+                        right_img_batch_pyramid[i][0],
+                        left_disp_pyramid[i][0],
+                    )
+                    for i in range(len(left_img_batch_pyramid))
+                ]
             if steps_done % 100 == 0 and i != 0:
                 elapsed_time = (time.time() / 3600) - start_time  # in hours
                 steps_to_do = total_steps - steps_done
@@ -178,13 +188,6 @@ def train(env: Literal["HomeLab", "Cluster"]):
                 print(
                     f"Epoch [{epoch+1}/{num_epochs}]| Steps: {steps_done}| Loss: {total_loss.item():.4f}| Learning rate: {config.learning_rate * lr_lambda(epoch)}| Elapsed time: {elapsed_time:.2f}h| Time to finish: ~{time_remaining}h|"
                 )
-                if config.debug:
-                    imshow(
-                        left_img_batch_pyramid[1][0],
-                        est_batch_pyramid_left[1][0],
-                        right_img_batch_pyramid[1][0],
-                        left_disp_pyramid[1][0],
-                    )
 
         eval_loss = eval(test_dataset, config, pydnet, device)
         if min_loss > eval_loss:

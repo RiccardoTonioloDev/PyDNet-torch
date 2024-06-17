@@ -236,6 +236,7 @@ class MonodepthModel(object):
             self.disp_right_smoothness = self.get_disparity_smoothness(
                 self.disp_right_est, self.right_pyramid
             )
+            print("Disp left smoothness length: ", len(self.disp_left_smoothness))
 
     def build_losses(self):
         with tf.variable_scope("losses", reuse=self.reuse_variables):

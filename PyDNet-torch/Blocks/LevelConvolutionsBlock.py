@@ -12,20 +12,16 @@ class LevelConvolutionsBlock(nn.Module):
             kernel_size=3,
             stride=1,
             padding=1,
-        )  # TODO: occhio al same
-        xavier_init(self.__first_conv)
+        )
         self.__second_conv = nn.Conv2d(
             in_channels=96, out_channels=64, kernel_size=3, stride=1, padding=1
         )
-        xavier_init(self.__second_conv)
         self.__third_conv = nn.Conv2d(
             in_channels=64, out_channels=32, kernel_size=3, stride=1, padding=1
         )
-        xavier_init(self.__third_conv)
         self.__fourth_conv = nn.Conv2d(
             in_channels=32, out_channels=8, kernel_size=3, stride=1, padding=1
         )
-        xavier_init(self.__fourth_conv)
 
         self.__block = nn.Sequential(
             self.__first_conv,

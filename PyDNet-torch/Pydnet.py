@@ -40,6 +40,8 @@ class Pydnet(nn.Module):
         self.upsizing_3 = UpsizingBlock(8, 8)
         self.upsizing_2 = UpsizingBlock(8, 8)
 
+        self.apply(xavier_init)
+
     def level_activations(self, x: torch.Tensor) -> torch.Tensor:
         return 0.3 * torch.sigmoid(x[:, :2, :, :])
 

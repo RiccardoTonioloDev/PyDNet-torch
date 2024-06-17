@@ -12,13 +12,9 @@ class DownsizingBlock(nn.Module):
             stride=2,
             padding=1,
         )
-        xavier_init(self.__first_conv)
         self.__second_conv = nn.Conv2d(
             out_channels, out_channels, kernel_size=3, stride=1, padding=1
         )
-
-        # TODO: ragionare sul padding same
-        xavier_init(self.__second_conv)
 
         self.block = nn.Sequential(  # TODO: ragionare sulla questione dello ZeroPad2D
             self.__first_conv,
