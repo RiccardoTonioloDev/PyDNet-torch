@@ -24,11 +24,18 @@ class ConfigHomeLab:
     weight_SSIM = 0.85
     # Weight between SSIM and L1 in the image loss
 
-    output_direcotry = "./outputfiles/outputs/"
-    # Output directory to test disparities
+    output_directory = "./outputfiles/outputs/"
+    # Output directory for the disparities file and for cluster
+    # logs (if you use slurm files)
     checkpoint_path = "./outputfiles/checkpoints/"
+    # Directory to be used to store checkpoint files.
 
     retrain = True
     # If True it retrains the model without using checkpoints
 
     debug = True
+    # Not used anymore but useful to enable certain code sections only when this
+    # parameter is set to True.
+
+    checkpoint_to_use_path = ""
+    # Path of the checkpoint file to be used inside the model.

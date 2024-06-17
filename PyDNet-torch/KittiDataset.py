@@ -49,7 +49,7 @@ class KittiDataset(Dataset):
         num_rows, _ = self.filenames_df.shape
         return num_rows
 
-    def __getitem__(self, i: int) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+    def __getitem__(self, i: int) -> Tuple[torch.Tensor, torch.Tensor] | torch.Tensor:
         path_ith_row_left, path_ith_row_right = self.filenames_df.iloc[i]
 
         left_image_path = os.path.join(self.data_path, path_ith_row_left)
@@ -67,9 +67,7 @@ class KittiDataset(Dataset):
 
         # Checking for testing
         if self.mode == "test":
-            # TODO: ricorda che nel codice originale viene ritornato un batch di immagini (sinistra e sinistra flippata).
-            # C'è la funzione statica `from_left_to_left_batch` per creare il batch a partire dall'imagine di sinistra.
-            return left_image_tensor, None
+            return left_image_tensor
 
         try:
             with Image.open(right_image_path) as right_image:

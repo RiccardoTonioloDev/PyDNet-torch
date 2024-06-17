@@ -2,6 +2,7 @@ from Blocks.DownsizingBlock import DownsizingBlock
 from Blocks.UpsizingBlock import UpsizingBlock
 from Blocks.LevelConvolutionsBlock import LevelConvolutionsBlock
 import torch.nn as nn
+import torch.nn.functional as F
 import torch
 from Blocks.Xavier_initializer import xavier_init
 
@@ -114,3 +115,14 @@ class Pydnet(nn.Module):
             )
             scaled_imgs.append(scaled_img)
         return scaled_imgs
+
+    @staticmethod
+    def upscale_img(
+        img_tensor: torch.Tensor, new_2d_size: tuple[int, int] = (256, 512)
+    ) -> torch.Tensor:
+        return F.interpolate(
+            img_tensor,
+            size=(new_2d_size[0], new_2d_size[1]),
+            mode="bilinear",
+            align_corners=False,
+        )
