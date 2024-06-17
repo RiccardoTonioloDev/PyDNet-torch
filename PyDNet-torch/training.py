@@ -161,25 +161,10 @@ def train(env: Literal["HomeLab", "Cluster"]):
                     "disp_gradient_loss": disp_grad_loss.item(),
                     "lr_loss": lr_loss.item(),
                     "total_loss": total_loss.item(),
-                    "avg_disparity_in_first_level": left_disp_pyramid[0]
-                    .detach()
-                    .cpu()
-                    .numpy()
-                    .mean(),
                 }
             )
             steps_done = i + epoch * steps_per_epoch
 
-            if False and steps_done % 10 == 0 and i != 0:
-                [
-                    imshow(
-                        left_img_batch_pyramid[i][0],
-                        est_batch_pyramid_left[i][0],
-                        right_img_batch_pyramid[i][0],
-                        left_disp_pyramid[i][0],
-                    )
-                    for i in range(len(left_img_batch_pyramid))
-                ]
             if steps_done % 100 == 0 and i != 0:
                 elapsed_time = (time.time() / 3600) - start_time  # in hours
                 steps_to_do = total_steps - steps_done
@@ -221,9 +206,17 @@ def eval(
             left_img_batch, right_img_batch = left_img_batch.to(
                 device
             ), right_img_batch.to(device)
+
+            # Model input
+            # model_input = torch.cat([left_img_batch, right_img_batch], 1)
             # Infering disparities based on left and right image batches
-            left_disp_pyramid = pydnet(left_img_batch)  # [B, 1, H, W]
-            right_disp_pyramid = pydnet(right_img_batch)  # [B, 1, H, W]
+            model_output: List[torch.Tensor] = pydnet(left_img_batch)
+            left_disp_pyramid = [mo[:, 0, :, :].unsqueeze(1) for mo in model_output]
+            right_disp_pyramid = [mo[:, 1, :, :].unsqueeze(1) for mo in model_output]
+
+            # Infering disparities based on left and right image batches
+            # left_disp_pyramid = pydnet(left_img_batch)
+            # right_disp_pyramid = pydnet(right_img_batch)
 
             # Creating pyramid of various resolutions for left and right image batches
             left_img_batch_pyramid = pydnet.scale_pyramid(
@@ -236,14 +229,14 @@ def eval(
             # Using disparities to generate corresponding left and right warped image batches (at various resolutions)
             est_batch_pyramid_left = [
                 generate_image_left(img, disp)
-                for img, disp in zip(right_img_batch_pyramid, right_disp_pyramid)
+                for img, disp in zip(right_img_batch_pyramid, left_disp_pyramid)
             ]
             est_batch_pyramid_right = [
                 generate_image_right(img, disp)
-                for img, disp in zip(left_img_batch_pyramid, left_disp_pyramid)
+                for img, disp in zip(left_img_batch_pyramid, right_disp_pyramid)
             ]
             # Calculating the loss based on the total loss function
-            total_loss, _, _, _ = L_total(
+            total_loss, img_loss, disp_grad_loss, lr_loss = L_total(
                 est_batch_pyramid_left,
                 est_batch_pyramid_right,
                 left_img_batch_pyramid,

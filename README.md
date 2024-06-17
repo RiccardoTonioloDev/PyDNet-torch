@@ -23,6 +23,41 @@ In this repository you can find four main folders:
 
 # Models
 
+## PyDNet-torch
+
+### Requirements
+
+```bash
+# Create the conda environment (use your preferred name)
+conda create -n <environmentName>
+# Activate the conda environment
+conda activate <environmentName>
+# Install the required packages (I'll use conda for torch)
+conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+# Install the required packages (I'll use pip for everything else)
+pip install wanb pandas
+```
+
+> IMPORTANT: choose the cuda version based on the cuda version of your system.
+
+### Training
+
+You have to make a configuration first. In the `Configs` folder you can find examples of the configurations I used in my homelab and in the department cluster.
+Once you created your own configuration, you have to add the selectable option inside the `Config.py` file.
+
+Every single configuration parameter it's well documented inside the examples you can find in the `Configs` folder.
+
+After you created the configuration you have to add it to the `main.py` file as a selectable option in the _arguments parameters_.
+
+```bash
+cd PyDNet-torch # To move into the model's folder
+python3 main.py --mode=train --env=<NameOfTheConfigurationYouWantToUse>
+```
+
+### Evaluating
+
+### Using
+
 ## PyDNet-tf1
 
 ### Requirements
@@ -54,29 +89,6 @@ conda activate <environmentName>
 # Install the required packages (I'll use pip)
 pip install tensorflow scipy matplotlib wandb
 ```
-
-### Training
-
-### Evaluating
-
-### Using
-
-## PyDNet-torch
-
-### Requirements
-
-```bash
-# Create the conda environment (use your preferred name)
-conda create -n <environmentName>
-# Activate the conda environment
-conda activate <environmentName>
-# Install the required packages (I'll use conda for torch)
-conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
-# Install the required packages (I'll use pip for everything else)
-pip install wanb pandas
-```
-
-> IMPORTANT: choose the cuda version based on the cuda version of your system.
 
 ### Training
 
