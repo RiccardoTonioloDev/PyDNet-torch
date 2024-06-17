@@ -7,8 +7,6 @@ class ConfigCluster:
     filenames_file_testing = (
         "/home/rtoniolo/Depth/PyDNet-torch/filenames/eigen_test_files_png.txt"
     )
-    input_height = 256
-    input_width = 512
     batch_size = 8
     num_epochs = 50
     learning_rate = 1e-4

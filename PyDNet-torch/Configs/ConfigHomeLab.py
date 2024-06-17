@@ -3,8 +3,6 @@ class ConfigHomeLab:
     data_path = "/media/riccardo-toniolo/Volume/KITTI/"
     filenames_file_training = "./filenames/eigen_train_files_png.txt"
     filenames_file_testing = "./filenames/eigen_test_files_png.txt"
-    input_height = 256
-    input_width = 512
     batch_size = 8
     num_epochs = 50
     learning_rate = 1e-4
