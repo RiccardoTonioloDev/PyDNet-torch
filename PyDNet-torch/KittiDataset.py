@@ -27,7 +27,7 @@ class KittiDataset(Dataset):
             mode (str): can be "train" for training and "test" for testing
             transform (Optional[transforms.Compose]): an optional transformation to be applied to images
         """
-        self.filenames_df = pd.read_csv(filenames_file_path, sep=r"\s+")
+        self.filenames_df = pd.read_csv(filenames_file_path, sep=r"\s+", header=None)
         self.data_path = data_path
         self.image_tensorizer = transforms.Compose(
             [

@@ -69,7 +69,7 @@ def evaluate_on_test_set(
 def generate_test_disparities(env: Literal["HomeLab", "Cluster"]) -> None:
     # Configurations and checks
     config = Config(env).get_configuration()
-    if config.checkpoint_to_use_path is None or config.checkpoint_to_use_path is "":
+    if config.checkpoint_to_use_path == None or config.checkpoint_to_use_path == "":
         print("You have to select a checkpoint to create the disparities file.")
         exit(0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -78,6 +78,7 @@ def generate_test_disparities(env: Literal["HomeLab", "Cluster"]) -> None:
     model = Pydnet().to(device)
     checkpoint = torch.load(config.checkpoint_to_use_path)
     model.load_state_dict(checkpoint["model_state_dict"])
+    model.eval()
 
     # Data
     test_dataset = KittiDataset(
@@ -85,6 +86,7 @@ def generate_test_disparities(env: Literal["HomeLab", "Cluster"]) -> None:
         config.filenames_file_testing,
         config.image_width,
         config.image_height,
+        mode="test",
     )
     test_dataloader = test_dataset.make_dataloader(1, shuffle_batch=False)
     num_of_samples = len(test_dataset)
@@ -93,16 +95,18 @@ def generate_test_disparities(env: Literal["HomeLab", "Cluster"]) -> None:
     disparities = np.zeros((num_of_samples, 256, 512), dtype=np.float32)
 
     print(f"Calculating disparities for {num_of_samples} samples.")
-    # Populatin disparities array
+    # Populating disparities array
     for i, left_img in enumerate(test_dataloader):
+        print("Doing image #", i + 1)
         left_img: torch.Tensor = left_img.to(device)
-        disp: torch.Tensor = model(left_img)[0]
-        disparities[i] = Pydnet.upscale_img(disp[0, 0, :, :].squeeze(), (256, 512))
+        with torch.no_grad():
+            disp: torch.Tensor = model(left_img)[0][:, 0, :, :].unsqueeze(1)
+            upscaled_disparities = Pydnet.upscale_img(disp, (256, 512))
+            disparities[i] = upscaled_disparities[0, 0, :, :].cpu().numpy()
     print("Computing complete.")
     print("Saving disparities.")
-    if config.output_directory == "" or config.output_directory is None:
-        output_directory = "."
-    else:
+    output_directory = "."
+    if config.output_directory != None and config.output_directory != "":
         output_directory = config.output_directory
     np.save(os.path.join(output_directory, "disparities.npy"), disparities)
     print("Disparities saved.")

@@ -35,5 +35,8 @@ class ConfigHomeLab:
     # Not used anymore but useful to enable certain code sections only when this
     # parameter is set to True.
 
-    checkpoint_to_use_path = ""
+    checkpoint_to_use_path = "./outputfiles/checkpoints/checkpoint_e48.pth.tar"
     # Path of the checkpoint file to be used inside the model.
+
+    disparities_to_use = "./outputfiles/outputs/disparities.npy"
+    # Path of the disparities file to be used for evaluations.

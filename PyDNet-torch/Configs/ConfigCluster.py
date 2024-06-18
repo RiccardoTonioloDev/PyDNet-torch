@@ -41,3 +41,6 @@ class ConfigCluster:
 
     checkpoint_to_use_path = ""
     # Path of the checkpoint file to be used inside the model.
+
+    disparities_to_use = ""
+    # Path of the disparities file to be used for evaluations.

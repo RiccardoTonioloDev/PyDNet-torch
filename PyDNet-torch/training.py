@@ -74,9 +74,9 @@ def train(env: Literal["HomeLab", "Cluster"]):
 
     # Checkpoint loading if set to true
     if (
-        config.retrain is False
-        and config.checkpoint_to_use_path is not None
-        and config.checkpoint_to_use_path is not ""
+        config.retrain == False
+        and config.checkpoint_to_use_path != None
+        and config.checkpoint_to_use_path != ""
     ):
         checkpoint = torch.load(config.checkpoint_to_use_path)
         model.load_state_dict(checkpoint["model_state_dict"])

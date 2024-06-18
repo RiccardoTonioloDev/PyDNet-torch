@@ -122,7 +122,7 @@ class Pydnet(nn.Module):
     ) -> torch.Tensor:
         return F.interpolate(
             img_tensor,
-            size=(new_2d_size[0], new_2d_size[1]),
+            size=new_2d_size,
             mode="bilinear",
             align_corners=False,
         )
