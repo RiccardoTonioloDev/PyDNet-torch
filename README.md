@@ -40,23 +40,67 @@ pip install wanb pandas opencv-python
 
 > IMPORTANT: choose the cuda version based on the cuda version of your system.
 
+### Configurations
+
+To make things smoother to try and test, this projects is based on configurations, lowering the amount of cli parameters you have to care for while executing the scripts.
+
+You can find two examples of configurations inside the `Configs` folder. Every configuration parameter that's not obvious it's well documented in the provided examples.
+
+You'll want to create you own configuration to specify different parameters, including the dataset path, the image resolution, and so on.
+
+To create a custom configuration, create one copying one of the examples and modify it to your likings.
+
+After you created your own configuration, you have to:
+
+-   Modify the `testing.py` so that the string that represents your configuration is a part of the type literal that represent the type of the `env` parameter;
+-   Modify the `evaluating.py` so that the string that represents your configuration is a part of the type literal that represent the type of the `env` parameter;
+-   Modify the `using.py` so that the string that represents your configuration is a part of the type literal that represent the type of the `env` parameter.
+
 ### Training
 
-You have to make a configuration first. In the `Configs` folder you can find examples of the configurations I used in my homelab and in the department cluster.
-Once you created your own configuration, you have to add the selectable option inside the `Config.py` file.
+**IMPORTANT**: make sure that the program it's using the right configuration as explained in the configurations section.
 
-Every single configuration parameter it's well documented inside the examples you can find in the `Configs` folder.
+This will generate the checkpoint of the last epoch and will maintain the checkpoint that had the best performance on the test set.
 
-After you created the configuration you have to add it to the `main.py` file as a selectable option in the _arguments parameters_.
+Those will be found inside the `outputfiles/checkpoints` folder.
 
 ```bash
 cd PyDNet-torch # To move into the model's folder
 python3 main.py --mode=train --env=<NameOfTheConfigurationYouWantToUse>
 ```
 
+### Testing
+
+**IMPORTANT**: make sure that the program it's using the right configuration as explained in the configurations section.
+
+This is used to generate the `disparities.npy` file. It will contain the disparities calculated for the images inside the provided test set.
+
+```bash
+cd PyDNet-torch # To move into the model's folder
+python3 main.py --mode=test --env=<NameOfTheConfigurationYouWantToUse>
+```
+
 ### Evaluating
 
+**IMPORTANT**: make sure that the program it's using the right configuration as explained in the configurations section.
+
+This is used to evaluate the model (using the evaluation techniques utilized by PyDNet and Monodepth) on the `disparities.npy` file, generated from the test set (look at the testing section).
+
+```bash
+cd PyDNet-torch # To move into the model's folder
+python3 main.py --mode=eval --env=<NameOfTheConfigurationYouWantToUse>
+```
+
 ### Using
+
+**IMPORTANT**: make sure that the program it's using the right configuration as explained in the configurations section.
+
+This will create a depth map image in the same folder of the image that was provided to the model.
+
+```bash
+cd PyDNet-torch # To move into the model's folder
+python3 main.py --mode=use --env=<NameOfTheConfigurationYouWantToUse> --img_path=<pathOfTheImageYouWantToUse>
+```
 
 ## PyDNet-tf1
 
