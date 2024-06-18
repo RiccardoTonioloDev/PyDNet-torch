@@ -13,7 +13,12 @@ from Losses import L_total, generate_image_left, generate_image_right
 from testing import evaluate_on_test_set
 
 
-def train(env: Literal["HomeLab", "Cluster"]):
+def train(env: Literal["HomeLab", "Cluster"]) -> None:
+    """
+    Function used to train the model.
+        `env`: str (is the selected configuration that will be use to configure the model, the dataset, the optimizer, the checkpoint logic and the training process)
+            If you use a custom configuration, you have to update the type literal inside of the function signature.
+    """
     # Configurations
     config = Config(env).get_configuration()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -98,10 +103,10 @@ def train(env: Literal["HomeLab", "Cluster"]):
             right_disp_pyramid = [mo[:, 1, :, :].unsqueeze(1) for mo in model_output]
 
             # Creating pyramid of various resolutions for left and right image batches
-            left_img_batch_pyramid = model.scale_pyramid(
+            left_img_batch_pyramid = Pydnet.scale_pyramid(
                 left_img_batch, 6
             )  # [B, C, H, W]
-            right_img_batch_pyramid = model.scale_pyramid(
+            right_img_batch_pyramid = Pydnet.scale_pyramid(
                 right_img_batch, 6
             )  # [B, C, H, W]
 

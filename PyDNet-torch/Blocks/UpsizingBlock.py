@@ -1,17 +1,19 @@
 from torch import nn
-from .Xavier_initializer import xavier_init
+import torch
 
 
 class UpsizingBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int):
         super(UpsizingBlock, self).__init__()
-        self.__deconv = nn.ConvTranspose2d(
-            in_channels=in_channels, out_channels=out_channels, kernel_size=2, stride=2
-        )
         self.__block = nn.Sequential(
-            self.__deconv,
+            nn.ConvTranspose2d(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=2,
+                stride=2,
+            ),
             nn.LeakyReLU(0.2),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.__block(x)

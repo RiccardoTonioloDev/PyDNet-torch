@@ -31,10 +31,10 @@ def evaluate_on_test_set(
             right_disp_pyramid = [mo[:, 1, :, :].unsqueeze(1) for mo in model_output]
 
             # Creating pyramid of various resolutions for left and right image batches
-            left_img_batch_pyramid = model.scale_pyramid(
+            left_img_batch_pyramid = Pydnet.scale_pyramid(
                 left_img_batch, 6
             )  # [B, C, H, W]
-            right_img_batch_pyramid = model.scale_pyramid(
+            right_img_batch_pyramid = Pydnet.scale_pyramid(
                 right_img_batch, 6
             )  # [B, C, H, W]
 
