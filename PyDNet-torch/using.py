@@ -12,10 +12,6 @@ image_to_single_batch_tensor = transforms.Compose(
     [
         transforms.ToImage(),
         transforms.ToDtype(torch.float32, scale=True),
-        transforms.Resize(
-            (256, 512),
-            interpolation=transforms.InterpolationMode.BILINEAR,
-        ),
     ]
 )
 
@@ -55,7 +51,9 @@ def use(env: Literal["HomeLab", "Cluster"], img_path: str):
 
     try:
         with Image.open(img_path) as img:
-            img_tensor: torch.Tensor = image_to_single_batch_tensor(img.convert("RGB"))
+            img = img.convert("RGB")
+            img = img.resize((256, 512), Image.LANCZOS)
+            img_tensor: torch.Tensor = image_to_single_batch_tensor(img)
             width, height = img.size
     except Exception as e:
         raise RuntimeError(f"Error loading image: {img_path}. {e}")
