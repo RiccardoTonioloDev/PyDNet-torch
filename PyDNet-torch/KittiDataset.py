@@ -33,10 +33,6 @@ class KittiDataset(Dataset):
             [
                 transforms.ToImage(),
                 transforms.ToDtype(torch.float32, scale=True),
-                transforms.Resize(
-                    (image_height, image_width),
-                    interpolation=transforms.InterpolationMode.BILINEAR,
-                ),
             ]
         )  # It allows us to transform each image retrieved from the dataset in a tensor
         self.mode = mode
@@ -59,7 +55,11 @@ class KittiDataset(Dataset):
             with Image.open(left_image_path) as left_image:
                 left_image_tensor: torch.Tensor = self.image_tensorizer(
                     left_image.convert("RGB")
-                )
+                ).unsqueeze(0)
+                left_image_tensor = torch.nn.functional.interpolate(
+                    left_image_tensor, (256, 512), mode="area"
+                ).squeeze(0)
+
         except Exception as e:
             raise RuntimeError(f"Error loading left image: {left_image_path}. {e}")
         if self.transform:
@@ -73,7 +73,10 @@ class KittiDataset(Dataset):
             with Image.open(right_image_path) as right_image:
                 right_image_tensor: torch.Tensor = self.image_tensorizer(
                     right_image.convert("RGB")
-                )
+                ).unsqueeze(0)
+                right_image_tensor = torch.nn.functional.interpolate(
+                    right_image_tensor, (256, 512), mode="area"
+                ).squeeze()
         except Exception as e:
             raise RuntimeError(f"Error loading right image: {right_image_path}. {e}")
         if self.transform:

@@ -7,6 +7,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import torch.nn.functional as F
 
 image_to_single_batch_tensor = transforms.Compose(
     [
@@ -16,21 +17,29 @@ image_to_single_batch_tensor = transforms.Compose(
 )
 
 
+def tensor_resizer(tensor: torch.Tensor, width: int, height: int) -> torch.Tensor:
+    print(tensor.size())
+    tensor = tensor if tensor.size().__len__() > 3 else tensor.unsqueeze(0)
+    tensor = F.interpolate(tensor, size=(height, width), mode="area")
+    return tensor
+
+
 def from_image_to_tensor(img: Image) -> torch.Tensor:
     img = img.convert("RGB")
-    img = img.resize((256, 512), Image.LANCZOS)
-    img_tensor: torch.Tensor = image_to_single_batch_tensor(img)
+    img_tensor: torch.Tensor = image_to_single_batch_tensor(img).unsqueeze(0)
     return img_tensor
 
 
-def post_process_disparity(disp):
+def post_process_disparity(disp: torch.Tensor):
     _, h, w = disp.shape
     l_disp = disp[0, :, :]
-    r_disp = np.fliplr(disp[1, :, :])
+    r_disp = torch.fliplr(disp[1, :, :])
     m_disp = 0.5 * (l_disp + r_disp)
-    l, _ = np.meshgrid(np.linspace(0, 1, w), np.linspace(0, 1, h))
-    l_mask = 1.0 - np.clip(20 * (l - 0.05), 0, 1)
-    r_mask = np.fliplr(l_mask)
+    l = torch.meshgrid(torch.linspace(0, 1, h), torch.linspace(0, 1, w), indexing="ij")[
+        0
+    ].to(disp.device)
+    l_mask = 1.0 - torch.clamp(20 * (l - 0.05), 0, 1)
+    r_mask = torch.fliplr(l_mask)
     return r_mask * l_disp + l_mask * r_disp + (1.0 - l_mask - r_mask) * m_disp
 
 
@@ -58,25 +67,48 @@ def use_with_path(env: Literal["HomeLab", "Cluster"], img_path: str):
 
     try:
         with Image.open(img_path) as img:
-            img_tensor = from_image_to_tensor(img)
             original_width, original_height = img.size
+            disp_to_img = use(
+                model,
+                img,
+                config.image_width,
+                config.image_height,
+                original_width,
+                original_height,
+                device,
+            )
+            # Salva l'immagine
+            plt.imsave(depth_map_path, disp_to_img, cmap="plasma")
+
+            print(f"Depth map salvata al seguente path:\n{depth_map_path}")
+
     except Exception as e:
         raise RuntimeError(f"Error loading image: {img_path}. {e}")
 
-    img_tensor = img_tensor.to(device)
 
-    disp_to_img = use(model, img_tensor, original_width, original_height)
-
-    # Salva l'immagine
-    plt.imsave(depth_map_path, disp_to_img, cmap="plasma")
-
-    print(f"Depth map salvata al seguente path:\n{depth_map_path}")
-
-
-def use(model: Pydnet, img: torch.Tensor, width: int, height: int) -> Image:
+def use(
+    model: Pydnet,
+    img: Image,
+    downscale_width: int,
+    downscale_height: int,
+    original_width: int,
+    original_height: int,
+    device: torch.device,
+) -> Image:
+    model.eval()
+    model.to(device)
+    img_tensor = from_image_to_tensor(img).to(device)
+    img_tensor = tensor_resizer(img_tensor, downscale_width, downscale_height)
     with torch.no_grad():
-        img_disparities: torch.Tensor = model(img.unsqueeze(0))[0].squeeze(0)
-        pp_img_disparities = post_process_disparity(img_disparities.cpu().numpy())
+        img_disparities: torch.Tensor = model(img_tensor)[0].squeeze(0)
+        pp_img_disparities = (
+            post_process_disparity(img_disparities).unsqueeze(0).unsqueeze(0)
+        )
+        img_disparities = (
+            tensor_resizer(pp_img_disparities, original_width, original_height)
+            .squeeze()
+            .cpu()
+            .numpy()
+        )
 
-    disp_to_img = Image.fromarray(pp_img_disparities)
-    return disp_to_img.resize((width, height), Image.LANCZOS)
+    return Image.fromarray(img_disparities)
