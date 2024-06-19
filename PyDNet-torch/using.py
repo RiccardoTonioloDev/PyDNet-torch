@@ -5,9 +5,9 @@ import torch
 import torchvision.transforms.v2 as transforms
 from PIL import Image
 import matplotlib.pyplot as plt
-import numpy as np
 import os
 import torch.nn.functional as F
+import time
 
 image_to_single_batch_tensor = transforms.Compose(
     [
@@ -17,7 +17,12 @@ image_to_single_batch_tensor = transforms.Compose(
 )
 
 
-def tensor_resizer(tensor: torch.Tensor, width: int, height: int) -> torch.Tensor:
+def tensor_resizer(
+    tensor: torch.Tensor,
+    width: int,
+    height: int,
+    mode: Literal["bicubic", "area"] = "area",
+) -> torch.Tensor:
     """
     It resizes the tensor to specified width and height.
         `tensor`: torch.Tensor[B,C,H,W]
@@ -26,7 +31,7 @@ def tensor_resizer(tensor: torch.Tensor, width: int, height: int) -> torch.Tenso
     Returns torch.Tensor[B,C,heigth,width]
     """
     tensor = tensor if tensor.size().__len__() > 3 else tensor.unsqueeze(0)
-    tensor = F.interpolate(tensor, size=(height, width), mode="area")
+    tensor = F.interpolate(tensor, size=(height, width), mode=mode)
     return tensor
 
 
@@ -77,13 +82,17 @@ def use_with_path(env: Literal["HomeLab", "Cluster"], img_path: str):
 
     # Model creation and configuration
     model = Pydnet().to(device)
-    checkpoint = torch.load(config.checkpoint_to_use_path)
+    checkpoint = torch.load(
+        config.checkpoint_to_use_path,
+        map_location=("cuda" if torch.cuda.is_available() else "cpu"),
+    )
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
 
     try:
         with Image.open(img_path) as img:
             original_width, original_height = img.size
+            start_time = time.time()
             disp_to_img = use(
                 model,
                 img,
@@ -93,6 +102,8 @@ def use_with_path(env: Literal["HomeLab", "Cluster"], img_path: str):
                 original_height,
                 device,
             )
+            elapsed_time = time.time() - start_time
+            print(f"Execution time: {elapsed_time:.2f}s")
             # Salva l'immagine
             plt.imsave(depth_map_path, disp_to_img, cmap="plasma")
 
@@ -126,12 +137,17 @@ def use(
     img_tensor = from_image_to_tensor(img).to(device)
     img_tensor = tensor_resizer(img_tensor, downscale_width, downscale_height)
     with torch.no_grad():
-        img_disparities: torch.Tensor = model(img_tensor)[0].squeeze(0)
-        pp_img_disparities = (
-            post_process_disparity(img_disparities).unsqueeze(0).unsqueeze(0)
-        )
+        img_disparities: torch.Tensor = model(img_tensor)[0][:, 0, :, :].unsqueeze(
+            1
+        )  # [1, 1, H, W]
+        # pp_img_disparities = (
+        #    post_process_disparity(img_disparities).unsqueeze(0).unsqueeze(0) # [1,1,H,W]
+        # )
         img_disparities = (
-            tensor_resizer(pp_img_disparities, original_width, original_height)
+            tensor_resizer(
+                img_disparities, original_width, original_height, mode="bicubic"
+            )
+            # tensor_resizer(pp_img_disparities, original_width, original_height)
             .squeeze()
             .cpu()
             .numpy()
