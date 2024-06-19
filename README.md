@@ -1,6 +1,6 @@
-# Depth
+# PyDNet-torch
 
-Studying and implementing the Pytorch version of [PyDNet v1](https://github.com/mattpoggi/pydnet)
+Studying and implementing the PyTorch version of [PyDNet v1](https://github.com/mattpoggi/pydnet)
 
 Used & studied models:
 
