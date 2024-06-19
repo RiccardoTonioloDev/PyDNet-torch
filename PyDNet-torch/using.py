@@ -18,19 +18,35 @@ image_to_single_batch_tensor = transforms.Compose(
 
 
 def tensor_resizer(tensor: torch.Tensor, width: int, height: int) -> torch.Tensor:
-    print(tensor.size())
+    """
+    It resizes the tensor to specified width and height.
+        `tensor`: torch.Tensor[B,C,H,W]
+        `width`: output tensor width
+        `height`: output tensor height
+    Returns torch.Tensor[B,C,heigth,width]
+    """
     tensor = tensor if tensor.size().__len__() > 3 else tensor.unsqueeze(0)
     tensor = F.interpolate(tensor, size=(height, width), mode="area")
     return tensor
 
 
 def from_image_to_tensor(img: Image) -> torch.Tensor:
+    """
+    Converts a pillow image to a torch.Tensor
+        `img`: pillow image
+    Returns image tensor.
+    """
     img = img.convert("RGB")
     img_tensor: torch.Tensor = image_to_single_batch_tensor(img).unsqueeze(0)
     return img_tensor
 
 
-def post_process_disparity(disp: torch.Tensor):
+def post_process_disparity(disp: torch.Tensor) -> torch.Tensor:
+    """
+    Post processing of the disparity tensor.
+        `disp`: torch.Tensor[C,H,W]
+    Returns the processed disparity tensor.
+    """
     _, h, w = disp.shape
     l_disp = disp[0, :, :]
     r_disp = torch.fliplr(disp[1, :, :])
@@ -87,7 +103,7 @@ def use_with_path(env: Literal["HomeLab", "Cluster"], img_path: str):
 
 
 def use(
-    model: Pydnet,
+    model: torch.nn.Module,
     img: Image,
     downscale_width: int,
     downscale_height: int,
@@ -95,6 +111,16 @@ def use(
     original_height: int,
     device: torch.device,
 ) -> Image:
+    """
+    It will use a Pillow image as an input and provide a pillow depth map as an output.
+        `model`: the Pydnet model used
+        `img`: the image in the pillow Image type
+        `downscale_width`: it's the width that the model accepts in the input
+        `downscale_height`: it's the height that the model accepts in the input
+        `original_width`: it's the width of the output image
+        `original_height`: it's the height of the output image
+        `device`: the device where the model it's hosted
+    """
     model.eval()
     model.to(device)
     img_tensor = from_image_to_tensor(img).to(device)

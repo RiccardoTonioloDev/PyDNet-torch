@@ -139,8 +139,5 @@ class Pydnet(nn.Module):
             `new_2d_size`: tuple(width,height)
         """
         return F.interpolate(
-            img_tensor,
-            size=new_2d_size,
-            mode="bilinear",
-            align_corners=False,
+            img_tensor, size=new_2d_size, mode="bilinear", align_corners=True
         )
