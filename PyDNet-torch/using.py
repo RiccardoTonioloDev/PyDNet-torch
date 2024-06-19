@@ -16,6 +16,13 @@ image_to_single_batch_tensor = transforms.Compose(
 )
 
 
+def from_image_to_tensor(img: Image) -> torch.Tensor:
+    img = img.convert("RGB")
+    img = img.resize((256, 512), Image.LANCZOS)
+    img_tensor: torch.Tensor = image_to_single_batch_tensor(img)
+    return img_tensor
+
+
 def post_process_disparity(disp):
     _, h, w = disp.shape
     l_disp = disp[0, :, :]
@@ -27,7 +34,7 @@ def post_process_disparity(disp):
     return r_mask * l_disp + l_mask * r_disp + (1.0 - l_mask - r_mask) * m_disp
 
 
-def use(env: Literal["HomeLab", "Cluster"], img_path: str):
+def use_with_path(env: Literal["HomeLab", "Cluster"], img_path: str):
     # Configurations and checks
     config = Config(env).get_configuration()
     if config.checkpoint_to_use_path == None or config.checkpoint_to_use_path == "":
@@ -51,22 +58,25 @@ def use(env: Literal["HomeLab", "Cluster"], img_path: str):
 
     try:
         with Image.open(img_path) as img:
-            img = img.convert("RGB")
-            img = img.resize((256, 512), Image.LANCZOS)
-            img_tensor: torch.Tensor = image_to_single_batch_tensor(img)
-            width, height = img.size
+            img_tensor = from_image_to_tensor(img)
+            original_width, original_height = img.size
     except Exception as e:
         raise RuntimeError(f"Error loading image: {img_path}. {e}")
 
     img_tensor = img_tensor.to(device)
-    with torch.no_grad():
-        img_disparities: torch.Tensor = model(img_tensor.unsqueeze(0))[0].squeeze(0)
-        pp_img_disparities = post_process_disparity(img_disparities.cpu().numpy())
 
-    disp_to_img = Image.fromarray(pp_img_disparities)
-    disp_to_img = disp_to_img.resize((width, height), Image.LANCZOS)
+    disp_to_img = use(model, img_tensor, original_width, original_height)
 
     # Salva l'immagine
     plt.imsave(depth_map_path, disp_to_img, cmap="plasma")
 
     print(f"Depth map salvata al seguente path:\n{depth_map_path}")
+
+
+def use(model: Pydnet, img: torch.Tensor, width: int, height: int) -> Image:
+    with torch.no_grad():
+        img_disparities: torch.Tensor = model(img.unsqueeze(0))[0].squeeze(0)
+        pp_img_disparities = post_process_disparity(img_disparities.cpu().numpy())
+
+    disp_to_img = Image.fromarray(pp_img_disparities)
+    return disp_to_img.resize((width, height), Image.LANCZOS)
