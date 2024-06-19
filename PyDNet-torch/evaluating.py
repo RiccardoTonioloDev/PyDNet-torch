@@ -1,6 +1,6 @@
 from typing import Literal
 import numpy as np
-import cv2
+from PIL import Image
 import os
 from collections import Counter
 from Config import Config
@@ -48,11 +48,11 @@ def eval_disparities_file(env: Literal["HomeLab", "Cluster"]):
         )
         gt_depths.append(depth.astype(np.float32))
 
-        disp_pred = cv2.resize(
-            pred_disparities[t_id],
-            (im_sizes[t_id][1], im_sizes[t_id][0]),
-            interpolation=cv2.INTER_LINEAR,
+        disp_pred = Image.fromarray(pred_disparities[t_id])
+        disp_pred = disp_pred.resize(
+            (im_sizes[t_id][1], im_sizes[t_id][0]), resample=Image.BILINEAR
         )
+        disp_pred = np.array(disp_pred)
         disp_pred = disp_pred * disp_pred.shape[1]
 
         # need to convert from disparity to depth
@@ -169,7 +169,7 @@ def read_file_data(files, data_root):
         if os.path.isfile(data_root + im):
             gt_files.append(data_root + vel)
             gt_calib.append(data_root + date + "/")
-            im_sizes.append(cv2.imread(data_root + im).shape[:2])
+            im_sizes.append(np.array(Image.open(data_root + im)).shape[:2])
             im_files.append(data_root + im)
             cams.append(2)
         else:
