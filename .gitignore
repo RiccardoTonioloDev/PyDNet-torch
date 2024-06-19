@@ -163,5 +163,5 @@ bash_files/
 
 .DS_Store/
 
-PyDNet-torch/outputfiles/checkpoints/checkpoint_e48.pth.tar
+PyDNet-torch/outputfiles/checkpoints/checkpoint_e048.pth.tar
 PyDNet-torch/outputfiles/outputs/disparities.npy

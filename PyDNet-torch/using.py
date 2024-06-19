@@ -52,8 +52,8 @@ def use(env: Literal["HomeLab", "Cluster"], img_path: str):
     try:
         with Image.open(img_path) as img:
             img = img.convert("RGB")
-            img = img.resize((256, 512), Image.LANCZOS)
-            img_tensor: torch.Tensor = image_to_single_batch_tensor(img)
+            resized_img = img.resize((256, 512), Image.LANCZOS)
+            img_tensor: torch.Tensor = image_to_single_batch_tensor(resized_img)
             width, height = img.size
     except Exception as e:
         raise RuntimeError(f"Error loading image: {img_path}. {e}")
