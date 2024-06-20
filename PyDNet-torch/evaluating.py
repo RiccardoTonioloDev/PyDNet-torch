@@ -83,7 +83,7 @@ def eval_disparities_file(env: Literal["HomeLab", "Cluster"]):
 
         mask = np.logical_and(gt_depth > min_depth, gt_depth < max_depth)
 
-        garg_crop = False
+        garg_crop = True
         eigen_crop = False
         if garg_crop or eigen_crop:
             gt_height, gt_width = gt_depth.shape
