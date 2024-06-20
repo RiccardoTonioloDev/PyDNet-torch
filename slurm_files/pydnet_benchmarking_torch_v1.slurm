@@ -6,7 +6,7 @@
 #SBATCH --mem=16G
 #SBATCH --cpus-per-task=20
 #SBATCH --gres=gpu:1
-#SBATCH --time=2-00:00:00
+#SBATCH --time=3-00:00:00
 #SBATCH --error=../PyDNet-torch/outputs/pydnet_torch.err
 #SBATCH --output=../PyDNet-torch/outputs/pydnet_torch.out
 
