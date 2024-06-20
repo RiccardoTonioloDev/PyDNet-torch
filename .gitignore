@@ -164,5 +164,5 @@ bash_files/
 .DS_Store/
 
 PyDNet-torch/outputfiles/checkpoints/checkpoint_e048.pth.tar
-PyDNet-torch/outputfiles/checkpoints/ckpt_dataset_fixato.pth.tar
 PyDNet-torch/outputfiles/outputs/disparities.npy
+PyDNet-torch/outputfiles/checkpoints/ckpt_dataset_fixato.pth.tar
