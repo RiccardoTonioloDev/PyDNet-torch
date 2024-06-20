@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import os
 import torch.nn.functional as F
 import time
+import numpy as np
 
 image_to_single_batch_tensor = transforms.Compose(
     [
@@ -121,7 +122,7 @@ def use(
     original_width: int,
     original_height: int,
     device: torch.device,
-) -> Image:
+) -> np.ndarray:
     """
     It will use a Pillow image as an input and provide a pillow depth map as an output.
         `model`: the Pydnet model used
@@ -153,4 +154,4 @@ def use(
             .numpy()
         )
 
-    return Image.fromarray(img_disparities)
+    return img_disparities

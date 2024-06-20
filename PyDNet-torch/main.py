@@ -3,6 +3,8 @@ from training import train
 from testing import generate_test_disparities
 from evaluating import eval_disparities_file
 from using import use_with_path
+from webcam import Webcam
+import tkinter as tk
 
 parser = argparse.ArgumentParser(description="PyDNet pytorch implementation.")
 
@@ -35,6 +37,10 @@ elif args.mode == "eval":
     eval_disparities_file(args.env)
 elif args.mode == "use":
     use_with_path(args.env, args.img_path)
+elif args.mode == "webcam":
+    root = tk.Tk()
+    app = Webcam(root, args.env)
+    root.mainloop()
 else:
     print(
         "You inserted the wrong mode argument in mode. Choose between: 'train', 'test', 'eval' and 'use'."
