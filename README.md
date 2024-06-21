@@ -35,8 +35,10 @@ conda activate <environmentName>
 # Install the required packages (I'll use conda for torch)
 conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
 # Install the required packages (I'll use pip for everything else)
-pip install wandb pandas opencv-python matplotlib Pillow
+pip install wandb pandas matplotlib Pillow
 ```
+
+> **WARNING**: if you want to use the `--use=webcam` flag, your system must have the `ffmpeg` command installed and know that this functionality was only tested on a macOS device with an ARM CPU. I use it because ARM chips can't use open-cv yet.
 
 > IMPORTANT: choose the cuda version based on the cuda version of your system.
 

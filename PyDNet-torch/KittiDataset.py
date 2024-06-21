@@ -40,6 +40,8 @@ class KittiDataset(Dataset):
         self.__horizontal_flipper = transforms.Compose(
             [transforms.RandomHorizontalFlip(p=1)]
         )
+        self.image_width = image_width
+        self.image_height = image_height
 
     def __len__(self) -> int:
         num_rows, _ = self.filenames_df.shape
@@ -57,7 +59,9 @@ class KittiDataset(Dataset):
                     left_image.convert("RGB")
                 ).unsqueeze(0)
                 left_image_tensor = torch.nn.functional.interpolate(
-                    left_image_tensor, (256, 512), mode="area"
+                    left_image_tensor,
+                    (self.image_height, self.image_width),
+                    mode="area",
                 ).squeeze(0)
 
         except Exception as e:
@@ -75,7 +79,9 @@ class KittiDataset(Dataset):
                     right_image.convert("RGB")
                 ).unsqueeze(0)
                 right_image_tensor = torch.nn.functional.interpolate(
-                    right_image_tensor, (256, 512), mode="area"
+                    right_image_tensor,
+                    (self.image_width, self.image_height),
+                    mode="area",
                 ).squeeze()
         except Exception as e:
             raise RuntimeError(f"Error loading right image: {right_image_path}. {e}")
