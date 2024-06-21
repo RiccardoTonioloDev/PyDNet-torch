@@ -122,10 +122,10 @@ class KittiDataset(Dataset):
         white = torch.ones(left_image.size(1), left_image.size(2))
         color_image = torch.stack([white * random_colors[i] for i in range(3)], dim=0)
 
+        # saturate
         left_image = left_image * color_image
         right_image = right_image * color_image
 
-        # saturate
         left_image = torch.clamp(left_image, 0, 1)
         right_image = torch.clamp(right_image, 0, 1)
 
