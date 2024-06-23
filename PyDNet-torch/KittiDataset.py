@@ -80,7 +80,7 @@ class KittiDataset(Dataset):
                 ).unsqueeze(0)
                 right_image_tensor = torch.nn.functional.interpolate(
                     right_image_tensor,
-                    (self.image_width, self.image_height),
+                    (self.image_height, self.image_width),
                     mode="area",
                 ).squeeze()
         except Exception as e:

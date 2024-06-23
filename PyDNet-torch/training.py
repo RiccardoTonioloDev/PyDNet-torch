@@ -103,11 +103,9 @@ def train(env: Literal["HomeLab", "Cluster"]) -> None:
             right_disp_pyramid = [mo[:, 1, :, :].unsqueeze(1) for mo in model_output]
 
             # Creating pyramid of various resolutions for left and right image batches
-            left_img_batch_pyramid = Pydnet.scale_pyramid(
-                left_img_batch, 6
-            )  # [B, C, H, W]
-            right_img_batch_pyramid = Pydnet.scale_pyramid(
-                right_img_batch, 6
+            left_img_batch_pyramid = model.scale_pyramid(left_img_batch)  # [B, C, H, W]
+            right_img_batch_pyramid = model.scale_pyramid(
+                right_img_batch
             )  # [B, C, H, W]
 
             # Using disparities to generate corresponding left and right warped image batches (at various resolutions)
