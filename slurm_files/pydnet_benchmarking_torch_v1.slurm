@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --nodelist=dellsrv1
-#SBATCH --job-name=pydnet_torch
+#SBATCH --nodelist=dellsrv3
+#SBATCH --job-name=pydnet_torch_200
 #SBATCH --partition=allgroups
 #SBATCH --ntasks=1
 #SBATCH --mem=16G
