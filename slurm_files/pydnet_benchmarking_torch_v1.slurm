@@ -7,8 +7,8 @@
 #SBATCH --cpus-per-task=20
 #SBATCH --gres=gpu:1
 #SBATCH --time=3-00:00:00
-#SBATCH --error=../PyDNet-torch/outputs/pydnet_torch.err
-#SBATCH --output=../PyDNet-torch/outputs/pydnet_torch.out
+#SBATCH --error=../PyDNet-torch/outputfiles/outputs/pydnet_torch.err
+#SBATCH --output=../PyDNet-torch/outputfiles/outputs/pydnet_torch.out
 
 
 source /home/rtoniolo/.bashrc
