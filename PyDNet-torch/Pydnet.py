@@ -6,14 +6,19 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from Blocks.Xavier_initializer import xavier_init
+from Config import Config
 
 
 class Pydnet(nn.Module):
-    def __init__(self):
+    def __init__(self, config: Config):
         super(Pydnet, self).__init__()
 
         # LEVEL 1
-        self.__downsizing_block_1 = DownsizingBlock(3, 16)
+        conf = config.get_configuration()
+        if conf.BlackAndWhite_processing:
+            self.__downsizing_block_1 = DownsizingBlock(1, 16)
+        else:
+            self.__downsizing_block_1 = DownsizingBlock(3, 16)
         self.__conv_block_1 = LevelConvolutionsBlock(16 + 8)
 
         # LEVEL 2

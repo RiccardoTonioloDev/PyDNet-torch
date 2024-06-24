@@ -5,14 +5,16 @@ import subprocess
 import numpy as np
 import threading
 from using import use
-from Pydnet import Pydnet
+from Pydnet import Pydnet, Pydnet2
 from Config import Config
 import torch
 from matplotlib import cm
 
 
 class Webcam:
-    def __init__(self, root: tk.Tk, env: Literal["HomeLab", "Cluster"]):
+    def __init__(
+        self, root: tk.Tk, env: Literal["HomeLab", "Cluster"], model: Pydnet | Pydnet2
+    ):
         self.root = root
         self.root.title("Video della fotocamera")
 
@@ -63,10 +65,9 @@ class Webcam:
             print("You have to select a checkpoint to correctly configure the model.")
             exit(0)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = Pydnet()
 
         # Model creation and configuration
-        self.model = Pydnet().to(self.device)
+        self.model = model.to(self.device)
         checkpoint = torch.load(
             self.config.checkpoint_to_use_path,
             map_location=("cuda" if torch.cuda.is_available() else "cpu"),

@@ -5,6 +5,8 @@ from evaluating import eval_disparities_file
 from using import use_with_path
 from webcam import Webcam
 import tkinter as tk
+from Config import Config
+from Pydnet import Pydnet, Pydnet2
 
 parser = argparse.ArgumentParser(description="PyDNet pytorch implementation.")
 
@@ -29,10 +31,16 @@ if args.env not in ["HomeLab", "Cluster"]:
     )
     exit(0)
 
+model = None
+if Config(args.env).get_configuration().PyDNet2_usage:
+    model = Pydnet2()
+else:
+    model = Pydnet(Config(args.env))
+
 if args.mode == "train":
-    train(args.env)
+    train(args.env, model)
 elif args.mode == "test":
-    generate_test_disparities(args.env)
+    generate_test_disparities(args.env, model)
 elif args.mode == "eval":
     eval_disparities_file(args.env)
 elif args.mode == "use":

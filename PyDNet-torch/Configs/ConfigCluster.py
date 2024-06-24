@@ -51,7 +51,7 @@ class ConfigCluster:
     # off for PyDNet to be trained as the original paper meant.                #
     ############################################################################
 
-    HSV_processing: bool = True
+    HSV_processing: bool = False
     # It means that images will be processed in HSV format instead of RGB.
 
     BlackAndWhite_processing: bool = False

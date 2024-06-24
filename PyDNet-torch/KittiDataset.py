@@ -6,6 +6,7 @@ import pandas as pd
 from PIL import Image
 import os
 import random
+from Config import Config
 
 
 class KittiDataset(Dataset):
@@ -15,6 +16,7 @@ class KittiDataset(Dataset):
         filenames_file_path: str,
         image_width: int,
         image_height: int,
+        config: Config,
         mode: Literal["train", "test"] = "train",
         transform: Optional[transforms.Compose] = None,
     ):
@@ -27,6 +29,7 @@ class KittiDataset(Dataset):
             mode (str): can be "train" for training and "test" for testing
             transform (Optional[transforms.Compose]): an optional transformation to be applied to images
         """
+        self.config = config.get_configuration()
         self.filenames_df = pd.read_csv(filenames_file_path, sep=r"\s+", header=None)
         self.data_path = data_path
         self.image_tensorizer = transforms.Compose(
@@ -39,6 +42,9 @@ class KittiDataset(Dataset):
         self.transform = transform
         self.__horizontal_flipper = transforms.Compose(
             [transforms.RandomHorizontalFlip(p=1)]
+        )
+        self.__vertical_flipper = transforms.Compose(
+            [transforms.RandomVerticalFlip(p=1)]
         )
         self.image_width = image_width
         self.image_height = image_height
@@ -55,9 +61,17 @@ class KittiDataset(Dataset):
 
         try:
             with Image.open(left_image_path) as left_image:
+                if self.config.HSV_processing:
+                    left_image = left_image.convert("HSV")
+                elif self.config.BlackAndWhite_processing:
+                    left_image = left_image.convert("L")
+                else:
+                    left_image = left_image.convert("RGB")
                 left_image_tensor: torch.Tensor = self.image_tensorizer(
-                    left_image.convert("RGB")
+                    left_image
                 ).unsqueeze(0)
+                if self.config.BlackAndWhite_processing:
+                    left_image_tensor = left_image_tensor.unsqueeze(1)
                 left_image_tensor = torch.nn.functional.interpolate(
                     left_image_tensor,
                     (self.image_height, self.image_width),
@@ -75,9 +89,17 @@ class KittiDataset(Dataset):
 
         try:
             with Image.open(right_image_path) as right_image:
+                if self.config.HSV_processing:
+                    right_image = right_image.convert("HSV")
+                elif self.config.BlackAndWhite_processing:
+                    right_image = right_image.convert("L")
+                else:
+                    right_image = right_image.convert("RGB")
                 right_image_tensor: torch.Tensor = self.image_tensorizer(
-                    right_image.convert("RGB")
+                    right_image
                 ).unsqueeze(0)
+                if self.config.BlackAndWhite_processing:
+                    right_image_tensor = right_image_tensor.unsqueeze(1)
                 right_image_tensor = torch.nn.functional.interpolate(
                     right_image_tensor,
                     (self.image_height, self.image_width),
@@ -101,33 +123,81 @@ class KittiDataset(Dataset):
                     left_image_tensor, right_image_tensor
                 )
 
+            # Experimental training for vertical flip
+            if self.config.VerticalFlipAugmentation and random.random() > 0.5:
+                left_image_tensor = self.__vertical_flipper(left_image_tensor)
+                right_image_tensor = self.__vertical_flipper(right_image_tensor)
+
         return left_image_tensor, right_image_tensor
 
-    @staticmethod
     def augment_image_pair(
-        left_image: torch.Tensor, right_image: torch.Tensor
+        self, left_image: torch.Tensor, right_image: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        # Shifting with random gamma
-        gamma = random.uniform(0.8, 1.2)
-        left_image = transforms.functional.adjust_gamma(left_image, gamma)
-        right_image = transforms.functional.adjust_gamma(right_image, gamma)
+        if self.config.HSV_processing:
+            # Shifting with random gamma
+            gamma = random.uniform(0.8, 1.2)
+            left_image = transforms.functional.adjust_gamma(left_image, gamma)
+            right_image = transforms.functional.adjust_gamma(right_image, gamma)
 
-        # Shifting with random brightness
-        brightness = random.uniform(0.5, 2)
-        left_image = transforms.functional.adjust_brightness(left_image, brightness)
-        right_image = transforms.functional.adjust_brightness(right_image, brightness)
+            # Shifting with random brightness
+            brightness = random.uniform(0.5, 2)
+            left_image[2] = transforms.functional.adjust_brightness(
+                left_image[2], brightness
+            )
+            right_image[2] = transforms.functional.adjust_brightness(
+                right_image[2], brightness
+            )
 
-        # Shifting with random colors
-        random_colors = torch.FloatTensor(3).uniform_(0.8, 1.2)
-        white = torch.ones(left_image.size(1), left_image.size(2))
-        color_image = torch.stack([white * random_colors[i] for i in range(3)], dim=0)
+            # Shifting with random colors
+            random_colors = torch.FloatTensor(3).uniform_(0.8, 1.2)
+            left_image[0] = left_image[0] * random_colors[0]  # Hue
+            left_image[1] = left_image[1] * random_colors[1]  # Saturation
+            right_image[0] = right_image[0] * random_colors[0]
+            right_image[1] = right_image[1] * random_colors[1]
 
-        # saturate
-        left_image = left_image * color_image
-        right_image = right_image * color_image
+            left_image = torch.clamp(left_image, 0, 1)
+            right_image = torch.clamp(right_image, 0, 1)
+        if self.config.BlackAndWhite_processing:
+            # Shifting with random gamma
+            gamma = random.uniform(0.8, 1.2)
+            left_image = transforms.functional.adjust_gamma(left_image, gamma)
+            right_image = transforms.functional.adjust_gamma(right_image, gamma)
 
-        left_image = torch.clamp(left_image, 0, 1)
-        right_image = torch.clamp(right_image, 0, 1)
+            # Shifting with random brightness
+            brightness = random.uniform(0.5, 2)
+            left_image = transforms.functional.adjust_brightness(left_image, brightness)
+            right_image = transforms.functional.adjust_brightness(
+                right_image, brightness
+            )
+
+            left_image = torch.clamp(left_image, 0, 1)
+            right_image = torch.clamp(right_image, 0, 1)
+        else:
+            # Shifting with random gamma
+            gamma = random.uniform(0.8, 1.2)
+            left_image = transforms.functional.adjust_gamma(left_image, gamma)
+            right_image = transforms.functional.adjust_gamma(right_image, gamma)
+
+            # Shifting with random brightness
+            brightness = random.uniform(0.5, 2)
+            left_image = transforms.functional.adjust_brightness(left_image, brightness)
+            right_image = transforms.functional.adjust_brightness(
+                right_image, brightness
+            )
+
+            # Shifting with random colors
+            random_colors = torch.FloatTensor(3).uniform_(0.8, 1.2)
+            white = torch.ones(left_image.size(1), left_image.size(2))
+            color_image = torch.stack(
+                [white * random_colors[i] for i in range(3)], dim=0
+            )
+
+            # saturate
+            left_image = left_image * color_image
+            right_image = right_image * color_image
+
+            left_image = torch.clamp(left_image, 0, 1)
+            right_image = torch.clamp(right_image, 0, 1)
 
         return left_image, right_image
 
@@ -146,11 +216,3 @@ class KittiDataset(Dataset):
             pin_memory=pin_memory,
         )
         return dataloader
-
-    @staticmethod
-    def from_left_to_left_batch(left_image_tensor: torch.Tensor) -> torch.Tensor:
-        """
-        To be used in testing, where we only do evaluations on the left image
-        """
-        left_image_tensor_flipped = transforms.functional.hflip(left_image_tensor)
-        return torch.stack([left_image_tensor, left_image_tensor_flipped], dim=0)

@@ -3,18 +3,17 @@ import numpy as np
 import os
 from typing import List, Literal
 from KittiDataset import KittiDataset
-from Pydnet import Pydnet
+from Pydnet import Pydnet, Pydnet2
 from Losses import L_total, generate_image_left, generate_image_right
 from Configs.ConfigCluster import ConfigCluster
 from Configs.ConfigHomeLab import ConfigHomeLab
 from Config import Config
-from using import post_process_disparity
 
 
 def evaluate_on_test_set(
     dataset: KittiDataset,
     config: ConfigHomeLab | ConfigCluster,
-    model: Pydnet,
+    model: Pydnet | Pydnet2,
     device: torch.device,
 ) -> torch.Tensor:
     model.eval()
@@ -32,11 +31,9 @@ def evaluate_on_test_set(
             right_disp_pyramid = [mo[:, 1, :, :].unsqueeze(1) for mo in model_output]
 
             # Creating pyramid of various resolutions for left and right image batches
-            left_img_batch_pyramid = Pydnet.scale_pyramid(
-                left_img_batch, 6
-            )  # [B, C, H, W]
-            right_img_batch_pyramid = Pydnet.scale_pyramid(
-                right_img_batch, 6
+            left_img_batch_pyramid = model.scale_pyramid(left_img_batch)  # [B, C, H, W]
+            right_img_batch_pyramid = model.scale_pyramid(
+                right_img_batch
             )  # [B, C, H, W]
 
             # Using disparities to generate corresponding left and right warped image batches (at various resolutions)
@@ -67,7 +64,9 @@ def evaluate_on_test_set(
         return avg_loss
 
 
-def generate_test_disparities(env: Literal["HomeLab", "Cluster"]) -> None:
+def generate_test_disparities(
+    env: Literal["HomeLab", "Cluster"], model: Pydnet | Pydnet2
+) -> None:
     # Configurations and checks
     config = Config(env).get_configuration()
     if config.checkpoint_to_use_path == None or config.checkpoint_to_use_path == "":
@@ -76,7 +75,7 @@ def generate_test_disparities(env: Literal["HomeLab", "Cluster"]) -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Model creation and configuration
-    model = Pydnet().to(device)
+    model = model.to(device)
     checkpoint = torch.load(config.checkpoint_to_use_path)
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
@@ -87,6 +86,7 @@ def generate_test_disparities(env: Literal["HomeLab", "Cluster"]) -> None:
         config.filenames_file_testing,
         config.image_width,
         config.image_height,
+        Config(env),
         mode="test",
     )
     test_dataloader = test_dataset.make_dataloader(1, shuffle_batch=False)

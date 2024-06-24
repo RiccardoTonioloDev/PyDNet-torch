@@ -8,12 +8,13 @@ import wandb
 import torch.optim as optim
 from KittiDataset import KittiDataset
 from Pydnet import Pydnet
+from Pydnet import Pydnet2
 from Config import Config
 from Losses import L_total, generate_image_left, generate_image_right
 from testing import evaluate_on_test_set
 
 
-def train(env: Literal["HomeLab", "Cluster"]) -> None:
+def train(env: Literal["HomeLab", "Cluster"], model: Pydnet | Pydnet2) -> None:
     """
     Function used to train the model.
         `env`: str (is the selected configuration that will be use to configure the model, the dataset, the optimizer, the checkpoint logic and the training process)
@@ -38,19 +39,21 @@ def train(env: Literal["HomeLab", "Cluster"]) -> None:
         config.filenames_file_training,
         config.image_width,
         config.image_height,
+        Config(env),
     )
     test_dataset = KittiDataset(
         config.data_path,
         config.filenames_file_testing,
         config.image_width,
         config.image_height,
+        Config(env),
     )
     train_dataloader = train_dataset.make_dataloader(
         config.batch_size, config.shuffle_batch
     )
 
     # Model
-    model = Pydnet().to(device)
+    model = model.to(device)
     num_of_params = sum(p.numel() for p in model.parameters())
     print("Total number of parameters: ", num_of_params)
 
