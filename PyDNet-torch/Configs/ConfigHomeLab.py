@@ -78,6 +78,8 @@ class ConfigHomeLab:
             and ConfigHomeLab.KittiRatioImageSize
         ):
             ConfigHomeLab.checkpoint_path += "192x640/"
+            ConfigHomeLab.image_height = 192
+            ConfigHomeLab.image_width = 640
             count += 1
         elif ConfigHomeLab.PyDNet2_usage is not None and ConfigHomeLab.PyDNet2_usage:
             ConfigHomeLab.checkpoint_path += "PyDNet2/"

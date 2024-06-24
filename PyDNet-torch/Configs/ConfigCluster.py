@@ -82,6 +82,8 @@ class ConfigCluster:
             and ConfigCluster.KittiRatioImageSize
         ):
             ConfigCluster.checkpoint_path += "192x640/"
+            ConfigCluster.image_height = 192
+            ConfigCluster.image_width = 640
             count += 1
         elif ConfigCluster.PyDNet2_usage is not None and ConfigCluster.PyDNet2_usage:
             ConfigCluster.checkpoint_path += "PyDNet2/"
