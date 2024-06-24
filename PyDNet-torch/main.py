@@ -44,7 +44,7 @@ elif args.mode == "test":
 elif args.mode == "eval":
     eval_disparities_file(args.env)
 elif args.mode == "use":
-    use_with_path(args.env, args.img_path)
+    use_with_path(args.env, args.img_path, model)
 elif args.mode == "webcam":
     root = tk.Tk()
     app = Webcam(root, args.env)

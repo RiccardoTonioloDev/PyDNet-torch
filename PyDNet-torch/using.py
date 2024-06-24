@@ -1,5 +1,5 @@
 from typing import Literal
-from Pydnet import Pydnet
+from Pydnet import Pydnet, Pydnet2
 from Config import Config
 import torch
 import torchvision.transforms.v2 as transforms
@@ -65,7 +65,9 @@ def post_process_disparity(disp: torch.Tensor) -> torch.Tensor:
     return r_mask * l_disp + l_mask * r_disp + (1.0 - l_mask - r_mask) * m_disp
 
 
-def use_with_path(env: Literal["HomeLab", "Cluster"], img_path: str):
+def use_with_path(
+    env: Literal["HomeLab", "Cluster"], img_path: str, model: Pydnet | Pydnet2
+):
     # Configurations and checks
     config = Config(env).get_configuration()
     if config.checkpoint_to_use_path == None or config.checkpoint_to_use_path == "":
@@ -82,7 +84,7 @@ def use_with_path(env: Literal["HomeLab", "Cluster"], img_path: str):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Model creation and configuration
-    model = Pydnet().to(device)
+    model = model.to(device)
     checkpoint = torch.load(
         config.checkpoint_to_use_path,
         map_location=("cuda" if torch.cuda.is_available() else "cpu"),
