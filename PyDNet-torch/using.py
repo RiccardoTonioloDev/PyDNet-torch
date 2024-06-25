@@ -140,12 +140,12 @@ def use(
     img_tensor = from_image_to_tensor(img).to(device)
     img_tensor = tensor_resizer(img_tensor, downscale_width, downscale_height)
     with torch.no_grad():
-        img_disparities: torch.Tensor = model(img_tensor)[0][:, 0, :, :].unsqueeze(
-            1
-        )  # [1, 1, H, W]
-        # pp_img_disparities = (
-        #    post_process_disparity(img_disparities).unsqueeze(0).unsqueeze(0) # [1,1,H,W]
-        # )
+        img_disparities: torch.Tensor = model(img_tensor)[0][0, :, :, :]  # [8, H, W]
+        img_disparities = (
+            post_process_disparity(img_disparities)
+            .unsqueeze(0)
+            .unsqueeze(0)  # [1,1,H,W]
+        )
         img_disparities = (
             tensor_resizer(
                 img_disparities, original_width, original_height, mode="bicubic"

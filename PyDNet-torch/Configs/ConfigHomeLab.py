@@ -38,7 +38,7 @@ class ConfigHomeLab:
         # parameter is set to True.
 
         self.checkpoint_to_use_path: str = (
-            "./outputfiles/checkpoints/PyDNet-torch_50.pth.tar"
+            "./outputfiles/checkpoints/PyDNet2/PyDNet-torch_V2.pth.tar"
         )
         # Path of the checkpoint file to be used inside the model.
 
@@ -60,7 +60,7 @@ class ConfigHomeLab:
         self.VerticalFlipAugmentation: bool = False
         # It means that images will have a 50% chance of being flipped upside-down
 
-        self.KittiRatioImageSize: bool = True
+        self.KittiRatioImageSize: bool = False
         # It will use a 192x640 size for input images.
 
         self.PyDNet2_usage: bool = True

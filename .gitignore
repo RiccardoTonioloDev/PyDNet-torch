@@ -163,5 +163,6 @@ bash_files/
 
 .DS_Store/
 
+PyDNet-torch/outputfiles/checkpoints/*/*.pth.tar
 PyDNet-torch/outputfiles/checkpoints/*.pth.tar
 PyDNet-torch/outputfiles/outputs/*.npy
