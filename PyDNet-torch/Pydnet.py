@@ -150,7 +150,7 @@ class Pydnet(nn.Module):
 
 class Pydnet2(nn.Module):
     def __init__(self):
-        super(Pydnet, self).__init__()
+        super(Pydnet2, self).__init__()
 
         # LEVEL 1
         self.__downsizing_block_1 = DownsizingBlock(3, 16)

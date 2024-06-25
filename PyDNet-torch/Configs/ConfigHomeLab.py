@@ -63,7 +63,7 @@ class ConfigHomeLab:
         self.KittiRatioImageSize: bool = True
         # It will use a 192x640 size for input images.
 
-        self.PyDNet2_usage: bool = False
+        self.PyDNet2_usage: bool = True
         # It means that the model that will be used is PyDNet2 instead of PyDNet
         count = 0
         if self.HSV_processing:
