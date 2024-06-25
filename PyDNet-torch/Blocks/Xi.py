@@ -1,5 +1,13 @@
 import torch.nn as nn
 import torch
+import math
+
+
+class SequentialWithBroadcast(nn.Sequential):
+    def forward(self, x, broadcasted_tensor):
+        for module in self:
+            x = module(x, broadcasted_tensor)
+        return x
 
 
 class XiConv2D(nn.Module):
@@ -38,6 +46,8 @@ class XiConv2D(nn.Module):
             padding=1,
         )
 
+        self.relu6 = nn.ReLU6()
+
         # Broadcasting channel alignment pointwise convolution (only if something has to be broadcasted)
         self.broadcast_channels = broadcast_channels
         if broadcast_channels != 0:
@@ -58,20 +68,97 @@ class XiConv2D(nn.Module):
     def forward(
         self, x: torch.Tensor, broadcasted_tensor: torch.Tensor = None
     ) -> torch.Tensor:
-        out = self.pointwise_conv1(x)
+        out = self.pointwise_conv(x)
+        # compression pointwise conv
+
         if broadcasted_tensor is not None:
-            resizing_factor = broadcasted_tensor.shape[2] // x.shape[2]
-            resized_broadcasted_tensor = torch.nn.functional.avg_pool2d(
-                broadcasted_tensor, resizing_factor, stride=1, padding=1
-            )
-            rechannelized_broadcasted_tensor = self.broadcast_pointwise_conv(
-                resized_broadcasted_tensor
-            )
-            out = out + rechannelized_broadcasted_tensor
+            resizing_factor_height = broadcasted_tensor.shape[-2] // x.shape[-2]
+            resizing_factor_width = broadcasted_tensor.shape[-1] // x.shape[-1]
+            if (
+                resizing_factor_width != 1 or resizing_factor_height != 1
+            ):  # resize only if at least one dimension has to be resized
+                broadcasted_tensor = torch.nn.functional.avg_pool2d(
+                    broadcasted_tensor,
+                    (resizing_factor_height, resizing_factor_width),
+                    stride=1,
+                    padding=(
+                        1 if resizing_factor_height > 1 else 0,
+                        1 if resizing_factor_width > 1 else 0,
+                    ),
+                )
+            # resizing in width and height the broadcasted tensor
+
+            broadcasted_tensor = self.broadcast_pointwise_conv(broadcasted_tensor)
+            # resizing in channels dimension the broadcasted tensor
+
+            out = out + broadcasted_tensor
+            # broadcasting the compressed and scaled input tensor
+        # applying broadcasted input if exists
+
         out = self.conv(out)
+        # applying main convolution
+
+        out = self.relu6(out)
+        # function activation after main convolution
+
         out = self.attention_module(out)
+        # applying attention module
+
         return out
 
 
 class XiNet(nn.Module):
-    pass
+    def __init__(
+        self,
+        in_channels_first_block: int,
+        out_channels_first_block: int,
+        N: int = 1,
+        D_i: int = 0,
+        alpha: float = 0.45,
+        gamma: float = 4,
+        beta: float = 1.8,
+    ):
+        super(XiNet, self).__init__()
+        net_out_channels = [math.floor(out_channels_first_block * alpha)] + [
+            4
+            * math.ceil(
+                alpha
+                * (2 ** (D_i - 2))
+                * (1 + (((beta - 1) * i) / N))
+                * out_channels_first_block
+            )
+            for i in range(1, N)
+        ]
+        net_in_channels = [math.floor(in_channels_first_block)] + net_out_channels[:-1]
+        self.__XiNet_blocks = SequentialWithBroadcast(
+            *[
+                XiConv2D(in_c, out_c, gamma=gamma, broadcast_channels=3)
+                for in_c, out_c in zip(net_in_channels, net_out_channels)
+            ]
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.__XiNet_blocks(x, x)
+
+
+xinet1 = XiNet(3, 16, 4, 0, 0.4, 4, 2)
+xinet2 = XiNet(16, 32, 4, 1, 0.4, 4, 2)
+xinet3 = XiNet(32, 64, 4, 2, 0.4, 4, 2)
+xinet4 = XiNet(64, 96, 4, 3, 0.4, 4, 2)
+xinet5 = XiNet(96, 128, 4, 4, 0.4, 4, 2)
+xinet6 = XiNet(128, 192, 4, 5, 0.4, 4, 2)
+
+
+def count_params(model: nn.Module) -> int:
+    return (sum(p.numel() for p in model.parameters() if p.requires_grad),)
+
+
+print(
+    "Number of parameters: ",
+    count_params(xinet1)
+    + count_params(xinet2)
+    + count_params(xinet3)
+    + count_params(xinet4)
+    + count_params(xinet5)
+    + count_params(xinet6),
+)
