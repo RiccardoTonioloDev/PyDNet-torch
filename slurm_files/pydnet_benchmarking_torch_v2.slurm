@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH --nodelist=dellsrv3
-#SBATCH --job-name=pydnet_torch
+#SBATCH --job-name=pydnet_torch_v2
 #SBATCH --partition=allgroups
 #SBATCH --ntasks=1
 #SBATCH --mem=16G
 #SBATCH --cpus-per-task=20
 #SBATCH --gres=gpu:1
 #SBATCH --time=3-00:00:00
-#SBATCH --error=../PyDNet-torch/outputfiles/outputs/pydnet_torch.err
-#SBATCH --output=../PyDNet-torch/outputfiles/outputs/pydnet_torch.out
+#SBATCH --error=../PyDNet-torch/outputfiles/outputs/pydnet_torch_Pydnet2.err
+#SBATCH --output=../PyDNet-torch/outputfiles/outputs/pydnet_torch_Pydnet2.out
 
 
 source /home/rtoniolo/.bashrc
