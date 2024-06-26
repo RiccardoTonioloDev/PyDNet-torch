@@ -24,12 +24,13 @@ class KittiDataset(Dataset):
     ):
         """
         Args:
-            data_path (str): Path to the dataset folder containing images.
-            filenames_file_path (str): Path to the file containing image filenames.
-            image_width (int): Width to resize the images.
-            image_height (int): Height to resize the images.
-            mode (str): can be "train" for training and "test" for testing
-            transform (Optional[transforms.Compose]): an optional transformation to be applied to images
+            - `data_path`: Path to the dataset folder containing images;
+            - `filenames_file_path`: Path to the file containing image filenames;
+            - `image_width`: Width to resize the images;
+            - `image_height`: Height to resize the images;
+            - `config`: the environment configuration;
+            - `mode`: can be "train" for training and "test" for testing;
+            - `transform`: an optional transformation to be applied to images.
         """
         self.config = config.get_configuration()
         self.filenames_df = pd.read_csv(filenames_file_path, sep=r"\s+", header=None)
@@ -130,6 +131,13 @@ class KittiDataset(Dataset):
     def augment_image_pair(
         self, left_image: torch.Tensor, right_image: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        It augments a pair of images working on gamma, brightness, colors and saturation.
+            - `left_image`: the left image in the stereo pair;
+            - `right_image`: the corresponding right image in the stereo pair.
+
+        It returns the augmented pair of images.
+        """
         # Shifting with random gamma
         gamma = random.uniform(0.8, 1.2)
         left_image = transforms.functional.adjust_gamma(left_image, gamma)
@@ -161,6 +169,15 @@ class KittiDataset(Dataset):
         num_workers: int = 4,
         pin_memory: bool = True,
     ) -> DataLoader:
+        """
+        It creates a dataloader from the dataset.
+            - `batch_size`: the number of samples inside a single batch;
+            - `shuffle_batch`: if true the batches will be different in every epoch;
+            - `num_workers`: the number of workers used to create batches;
+            - `pin_memory`: leave it to true (it's to optimize the flow of information between CPU and GPU).
+
+        Returns the configured dataloader.
+        """
         dataloader = DataLoader(
             self,
             batch_size,
@@ -171,10 +188,14 @@ class KittiDataset(Dataset):
         return dataloader
 
     @staticmethod
-    def from_left_to_left_batch(left_image_tensor: torch.Tensor) -> torch.Tensor:
+    def from_left_to_left_batch(image_tensor: torch.Tensor) -> torch.Tensor:
         """
-        To be used in testing, where we only do evaluations on the left image
+        To be used during testing, where we suppose to do evaluations only on the left image.
+            - `image_tensor`: the tensor we suppose being the left_image.
+
+        Returns a Tensor[2,3,H,W] corresponding to the left image stacked on top of the
+        horizontally-flipped-left image.
         """
-        left_image_tensor = left_image_tensor.squeeze()
-        left_image_tensor_flipped = transforms.functional.hflip(left_image_tensor)
-        return torch.stack([left_image_tensor, left_image_tensor_flipped], dim=0)
+        image_tensor = image_tensor.squeeze()
+        left_image_tensor_flipped = transforms.functional.hflip(image_tensor)
+        return torch.stack([image_tensor, left_image_tensor_flipped], dim=0)

@@ -52,7 +52,8 @@ class Pydnet(nn.Module):
     def __level_activations(self, x: torch.Tensor) -> torch.Tensor:
         """
         Gives back the disparities for left images on the 0th channel and for the right images on the 1th channel.
-            `x`: torch.Tensor[B,C,W,H]
+            - `x`: torch.Tensor[B,C,W,H]
+
         Returns a torch.Tensor[B,2,W,H]
         """
         return 0.3 * torch.sigmoid(x[:, :2, :, :])
@@ -118,8 +119,9 @@ class Pydnet(nn.Module):
     def scale_pyramid(img_batch: torch.Tensor, num_scales: int = 6) -> torch.Tensor:
         """
         It scales the batch of images to `num_scales` scales, everytime dividing by 2 the height and the width.
-            `img_batch`: torch.Tensor[B,C,H,W]
-            `num_scales`: int
+            - `img_batch`: torch.Tensor[B,C,H,W]
+            - `num_scales`: int
+
         Returns a List[torch.Tensor[B,C,H,W]] with a length of `num_scales`.
         """
         scaled_imgs = []
@@ -140,8 +142,10 @@ class Pydnet(nn.Module):
     ) -> torch.Tensor:
         """
         It upscales the `img_tensor` using bilinear interpolation to the specified size `new_2d_size`.
-            `img_tensor`: torch.Tensor[B,C,H,W]
-            `new_2d_size`: tuple(width,height)
+            - `img_tensor`: torch.Tensor[B,C,H,W];
+            - `new_2d_size`: tuple(width,height).
+
+        Returns a torch.Tensor[B,C,width, height].
         """
         return F.interpolate(
             img_tensor, size=new_2d_size, mode="bilinear", align_corners=True
@@ -177,7 +181,8 @@ class Pydnet2(nn.Module):
     def __level_activations(self, x: torch.Tensor) -> torch.Tensor:
         """
         Gives back the disparities for left images on the 0th channel and for the right images on the 1th channel.
-            `x`: torch.Tensor[B,C,W,H]
+            - `x`: torch.Tensor[B,C,W,H]
+
         Returns a torch.Tensor[B,2,W,H]
         """
         return 0.3 * torch.sigmoid(x[:, :2, :, :])
@@ -225,8 +230,9 @@ class Pydnet2(nn.Module):
     def scale_pyramid(img_batch: torch.Tensor, num_scales: int = 4) -> torch.Tensor:
         """
         It scales the batch of images to `num_scales` scales, everytime dividing by 2 the height and the width.
-            `img_batch`: torch.Tensor[B,C,H,W]
-            `num_scales`: int
+            - `img_batch`: torch.Tensor[B,C,H,W]
+            - `num_scales`: int
+
         Returns a List[torch.Tensor[B,C,H,W]] with a length of `num_scales`.
         """
         scaled_imgs = []
@@ -247,8 +253,10 @@ class Pydnet2(nn.Module):
     ) -> torch.Tensor:
         """
         It upscales the `img_tensor` using bilinear interpolation to the specified size `new_2d_size`.
-            `img_tensor`: torch.Tensor[B,C,H,W]
-            `new_2d_size`: tuple(width,height)
+            - `img_tensor`: torch.Tensor[B,C,H,W];
+            - `new_2d_size`: tuple(width,height).
+
+        Returns a torch.Tensor[B,C,width, height].
         """
         return F.interpolate(
             img_tensor, size=new_2d_size, mode="bilinear", align_corners=True

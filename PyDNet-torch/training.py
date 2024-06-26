@@ -17,8 +17,9 @@ from testing import evaluate_on_test_set
 def train(env: Literal["HomeLab", "Cluster"], model: Pydnet | Pydnet2) -> None:
     """
     Function used to train the model.
-        `env`: str (is the selected configuration that will be use to configure the model, the dataset, the optimizer, the checkpoint logic and the training process)
-            If you use a custom configuration, you have to update the type literal inside of the function signature.
+        - `env`: is the selected configuration that will be use to configure the model, the dataset, the optimizer,
+            the checkpoint logic and the training process;
+        - `model`: the model that will be used in the training process.
     """
     # Configurations
     config = Config(env).get_configuration()
@@ -52,12 +53,12 @@ def train(env: Literal["HomeLab", "Cluster"], model: Pydnet | Pydnet2) -> None:
         config.batch_size, config.shuffle_batch
     )
 
-    # Model
+    # Model configuration
     model = model.to(device)
     num_of_params = sum(p.numel() for p in model.parameters())
     print("Total number of parameters: ", num_of_params)
 
-    # Optimizer
+    # Optimizer creation and configuration
     optimizer = optim.Adam(
         model.parameters(), lr=config.learning_rate, betas=(0.9, 0.999), eps=1e-8
     )
@@ -80,7 +81,7 @@ def train(env: Literal["HomeLab", "Cluster"], model: Pydnet | Pydnet2) -> None:
     min_loss = torch.Tensor([0]).to(device)
     checkpoint_files = []
 
-    # Checkpoint loading if set to true
+    # Checkpoint loading for training if set to true
     if (
         config.retrain == False
         and config.checkpoint_to_use_path != None

@@ -15,6 +15,10 @@ class Webcam:
     def __init__(
         self, root: tk.Tk, env: Literal["HomeLab", "Cluster"], model: Pydnet | Pydnet2
     ):
+        """
+        # Warning
+        This class has only been tested on macOS, with a Macbook M1 pro chip.
+        """
         self.root = root
         self.root.title("Video della fotocamera")
 

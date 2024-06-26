@@ -17,6 +17,15 @@ def evaluate_on_test_set(
     model: Pydnet | Pydnet2,
     device: torch.device,
 ) -> torch.Tensor:
+    """
+    It performs an evaluation of the model on the test set.
+        - `dataset`: test dataset;
+        - `config`: environment configuration;
+        - `model`: model used for the evaluation process;
+        - `device`: it should be the same device of the model.
+
+    Returns the scalar tensor representing the total loss on the test set.
+    """
     model.eval()
     test_dataloader = dataset.make_dataloader(config.batch_size, False)
     total_loss_tower = []
@@ -68,6 +77,11 @@ def evaluate_on_test_set(
 def generate_test_disparities(
     env: Literal["HomeLab", "Cluster"], model: Pydnet | Pydnet2
 ) -> None:
+    """
+    It generates the `disparities.npy` file that will be used for the true evaluation step.
+        - `env`: the selected environment to select the right configuration;
+        - `model`: the model that will be used to generate the various disparities.
+    """
     # Configurations and checks
     config = Config(env).get_configuration()
     if config.checkpoint_to_use_path == None or config.checkpoint_to_use_path == "":

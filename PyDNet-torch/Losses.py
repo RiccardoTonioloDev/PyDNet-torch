@@ -7,10 +7,8 @@ from torch.nn.functional import pad
 def L1_loss(est_batch: torch.Tensor, img_batch: torch.Tensor) -> torch.Tensor:
     """
     # L1 diffence
-    `est_batch`: Tensor[B, C, H, W]
-        The warped image batch
-    `img_batch`: Tensor[B, C, H, W]
-        The original image batch
+    - `est_batch`: Tensor[B, C, H, W] The warped image batch;
+    - `img_batch`: Tensor[B, C, H, W] The original image batch.
     """
     return torch.abs(est_batch - img_batch)  # [B, C, H, W]
 
@@ -18,10 +16,8 @@ def L1_loss(est_batch: torch.Tensor, img_batch: torch.Tensor) -> torch.Tensor:
 def SSIM_loss(est_batch: torch.Tensor, img_batch: torch.Tensor) -> torch.Tensor:
     """
     # Structural Similarity Index Measure
-    `est_batch`: Tensor[B, C, H, W]
-       The warped image batch
-    `img_batch`: Tensor[B, C, H, W]
-        The original image batch
+    - `est_batch`: Tensor[B, C, H, W] The warped image batch;
+    - `img_batch`: Tensor[B, C, H, W] The original image batch.
     """
     C1 = 0.01**2
     C2 = 0.03**2
@@ -54,10 +50,8 @@ def L_ap(
 ) -> torch.Tensor:
     """
     # Reconstruction error loss (otherwise called image loss)
-        `est_batch_pyramid`: List[Tensor[B, C, H, W]]
-            Warped image batch at different scales
-        `img_batch_pyramid`: List[Tensor[B, C, H, W]]
-            Corresponding image batch at different scales
+        - `est_batch_pyramid`: List[Tensor[B, C, H, W]] Warped image batch at different scales;
+        - `img_batch_pyramid`: List[Tensor[B, C, H, W]] Corresponding image batch at different scales.
     """
     SSIM_pyramid = [
         SSIM_loss(est, img).mean() * alpha
@@ -74,11 +68,23 @@ def L_ap(
 
 
 def gradient_x(tensor: torch.Tensor):
+    """
+    Generates the horizontal gradient tensor of the input tensor.
+        - `tensor`: Tensor[B,C,H,W] The input tensor.
+
+    Returns a Tensor[B,C,H,W-1]
+    """
     gx = tensor[:, :, :, :-1] - tensor[:, :, :, 1:]
     return gx
 
 
 def gradient_y(tensor: torch.Tensor):
+    """
+    Generates the vertical gradient tensor of the input tensor.
+        - `tensor`: Tensor[B,C,H,W] The input tensor.
+
+    Returns a Tensor[B,C,H-1,W]
+    """
     gy = tensor[:, :, :-1, :] - tensor[:, :, 1:, :]
     return gy
 
@@ -88,34 +94,34 @@ def disparity_smoothness(
 ) -> torch.Tensor:
     """
     Disparity smoothness
-        `disparity_batch`: [B, 1, H, W] (the channels dimension is externally artificially added).
+        - `disparity_batch`: Tensor[B, 1, H, W] (the channels dimension is externally artificially added).
             Normally it would be [B, H, W] because disparities are single numbers in a specific
             pixel location.
-            Calculated disparities for a specific side
-        `image_batch`: [B, C, H, W]
-            Images batch of the corresponding side
+            This tensor represents the disparities for a specific side;
+        - `image_batch`: Tensor[B, C, H, W] Images batch of the corresponding side.
+
+    IMPORTANT: only the horizontal gradient has been calculated, as the original code makes only use
+    of the horizontal gradient to compute disparity smoothness. I've left the code (commented) of the
+    vertical gradient computation in case of necessity.
+
+    Returns a scalar Tensor representing the disparity smoothness.
     """
     disparity_grad_x = torch.abs(gradient_x(disparity_batch))  # [B, 1, H, W - 1]
-    disparity_grad_y = torch.abs(gradient_y(disparity_batch))  # [B, 1, H - 1, W]
+    # disparity_grad_y = torch.abs(gradient_y(disparity_batch))  # [B, 1, H - 1, W]
 
     image_grad_x = gradient_x(image_batch)  # [B, C, H, W - 1]
-    image_grad_y = gradient_y(image_batch)  # [B, C, H - 1, W]
+    # image_grad_y = gradient_y(image_batch)  # [B, C, H - 1, W]
 
     weights_x = torch.exp(
         -torch.mean(torch.abs(image_grad_x), 1, keepdim=True)
     )  # [B, 1, H, W - 1]
-    # weights_y = torch.exp( # IN TEORIA NON VENGONO UTILIZZATI I PESI IN ALTEZZA NEL CALCOLO
+    # weights_y = torch.exp(
     #    -torch.mean(torch.abs(image_grad_y), 1, keepdim=True)
     # )  # [B, 1, H - 1, W]
 
     smoothness_x = disparity_grad_x * weights_x  # [B, 1, H, W - 1]
     # smoothness_y = disparity_grad_y * weights_y  # [B, 1, H - 1, W]
 
-    # smoothness_sum = (
-    #    smoothness_x[:, :, :-1, :] + smoothness_y[:, :, :, :-1]
-    # )  # [B, 1, H - 1, W - 1]
-
-    # return torch.mean(torch.mean(smoothness_sum, dim=(2, 3)))  # Tensor[Scalar]
     return torch.mean(torch.abs(smoothness_x))  # Tensor[Scalar]
 
 
@@ -125,10 +131,8 @@ def L_df(
 ) -> torch.Tensor:
     """
     # Disparity gradient loss
-        `disparity_batch_pyramid`: List[Tensor[B, 1, H, W]]
-            Calculated disparities for a specific side (at various resolutions)
-        `image_batch_pyramid`: List[[B, C, H, W]]
-            Images batch of the corresponding side (at various resolutions)
+        - `disparity_batch_pyramid`: List[Tensor[B, 1, H, W]] Calculated disparities for a specific side (at various resolutions);
+        - `image_batch_pyramid`: List[Tensor[B, C, H, W]] Images batch of the corresponding side (at various resolutions).
     """
     return sum(
         [
@@ -142,7 +146,15 @@ def L_df(
 
 def bilinear_sampler_1d_h(
     input_images, x_offset, wrap_mode="border", tensor_type="torch.cuda.FloatTensor"
-):
+) -> torch.Tensor:
+    """
+    It does bilinear sampling on the `input_images` using the `x_offset` (disparities) for the coordinates.
+        - `input_images`: the images that will be sampled;
+        - `x_offset`: the disparities that will be used to sample the input images;
+        - `torch.cuda.FloatTensor`: leave it as default.
+
+    Returns torch.Tensor[B,C,H,W].
+    """
     num_batch, num_channels, height, width = input_images.size()
 
     # Handle both texture border types
@@ -222,10 +234,8 @@ def generate_image_left(
 ) -> torch.Tensor:
     """
     It generates a left image, starting from the right one, using disparities to sample.
-        `right_img_batch`: [B, C, H, W]
-            Right images to warp into left ones using the corresponding disparities.
-        `right_disp_batch`: [B, 1, H, W]
-            The corresponding disparities to use for right images.
+        - `right_img_batch`: [B, C, H, W] Right images to warp into left ones using the corresponding disparities;
+        - `right_disp_batch`: [B, 1, H, W] The corresponding disparities to use for right images.
     """
     return bilinear_sampler_1d_h(right_img_batch, -right_disp_batch)
 
@@ -235,10 +245,8 @@ def generate_image_right(
 ) -> torch.Tensor:
     """
     It generates a right image, starting from the left one, using disparities to sample.
-        `left_img_batch`: [B, C, H, W]
-            Left images to warp into right ones using the corresponding disparities.
-        `left_disp_batch`: [B, 1, H, W]
-            The corresponding disparities to use for left images.
+        - `left_img_batch`: [B, C, H, W] Left images to warp into right ones using the corresponding disparities;
+        - `left_disp_batch`: [B, 1, H, W] The corresponding disparities to use for left images.
     """
     return bilinear_sampler_1d_h(left_img_batch, left_disp_batch)
 
@@ -249,10 +257,8 @@ def L_lr(
 ) -> torch.Tensor:
     """
     # Left-righ consistency loss
-        `disp_l_batch_pyramid`: List[Tensor[B, 1, H, W]]
-            Disparities for left images (at different scales).
-        `disp_r_batch_pyramid`: List[Tensor[B, 1, H, W]]
-            Disparities for right images (at different scales).
+        - `disp_l_batch_pyramid`: List[Tensor[B, 1, H, W]] Disparities for left images (at different scales);
+        - `disp_r_batch_pyramid`: List[Tensor[B, 1, H, W]] Disparities for right images (at different scales).
     """
     right_to_left_disp = [
         generate_image_left(disp_r, disp_l)  # [B, 1, H, W]
@@ -287,22 +293,19 @@ def L_total(
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     # Total loss
-    It combines the various losses to obtain the total loss
-        Images constructed by using disparities (at various resolutions):
-            `est_batch_pyramid_l`: List[Tensor],
-                Reconstructed (warped) left images
-            `est_batch_pyramid_r`: List[Tensor],
-                Reconstructed (warped) right images
-        Images (at various resolutions):
-            `img_batch_pyramid_l`: List[Tensor],
-                Images in left batch.
-            `img_batch_pyramid_r`: List[Tensor],
-                Images in right batch.
-        Disparities (at various resolutions)
-            `disp_batch_pyramid_l`: List[Tensor],
-                Disparities calculated on left batch.
-            `disp_batch_pyramid_r`: List[Tensor],
-                Disparities calculated on right batch.
+    It combines the various losses to obtain the total loss.
+
+    Images constructed by using disparities (at various resolutions):
+        - `est_batch_pyramid_l`: List[Tensor] Reconstructed (warped) left images;
+        - `est_batch_pyramid_r`: List[Tensor] Reconstructed (warped) right images.
+
+    Images (at various resolutions):
+        - `img_batch_pyramid_l`: List[Tensor] Images in left batch;
+        - `img_batch_pyramid_r`: List[Tensor] Images in right batch.
+
+    Disparities (at various resolutions)
+        - `disp_batch_pyramid_l`: List[Tensor] Disparities calculated on left batch;
+        - `disp_batch_pyramid_r`: List[Tensor] Disparities calculated on right batch.
     """
     L_ap_tot = L_ap(est_batch_pyramid_l, img_batch_pyramid_l, weight_SSIM) + L_ap(
         est_batch_pyramid_r, img_batch_pyramid_r, weight_SSIM
