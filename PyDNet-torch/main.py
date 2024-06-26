@@ -47,7 +47,7 @@ elif args.mode == "use":
     use_with_path(args.env, args.img_path, model)
 elif args.mode == "webcam":
     root = tk.Tk()
-    app = Webcam(root, args.env)
+    app = Webcam(root, args.env, model)
     root.mainloop()
 else:
     print(
