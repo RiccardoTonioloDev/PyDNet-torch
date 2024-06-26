@@ -1,21 +1,22 @@
 # PyDNet-torch
 
-Studying and implementing the PyTorch version of [PyDNet v1](https://github.com/mattpoggi/pydnet)
+Studying, implementing and experimenting with the PyTorch version of [PyDNet v1](https://github.com/mattpoggi/pydnet)
+Everything was made by me (if not cited otherwise).
 
 Used & studied models:
 
--   [PyDNet v1](https://github.com/mattpoggi/pydnet)
--   [monodepth](https://github.com/mrharicot/monodepth) (used under the hood to train PyDNet)
+-   [PyDNet v1](https://github.com/mattpoggi/pydnet) (studied the original code and reproduced the experiment to verify paper results);
+-   [monodepth](https://github.com/mrharicot/monodepth) (used under the hood to train PyDNet).
 
 # General information
 
 In this repository you can find four main folders:
 
--   `/outputfiles`: the folder that contains the checkpoints of the models;
--   `/slurm_files`: the folder that contains slurm files that were used to execute the code inside of the cluster.
--   `/PyDNet-tf1`: the original PyDNet v1 in its tensorflow 1.X implementation;
--   `/PyDNet-tf2`: a PyDNet v1 implementation made migrating the code to tensorflow 2.X (unfortunately it doesn't seem to work with the GPU);
--   `/PyDNet-torch`: a PyDNet v1 implementation made using the Pytorch framework.
+-   `/PyDNet-torch`: my PyDNet v1 implementation made using the PyTorch framework.
+-   `/PyDNet-tf1`: the original PyDNet v1 in its tensorflow 1.X implementation (copied from the above-mentioned repository);
+-   `/PyDNet-tf2`: an attempt of migrating PyDNet v1 to tensorflow 2.X (unfortunately it doesn't seem to work with the GPU);
+-   `/outputfiles`: the folder that contains the checkpoints of the tensorflow 1 model;
+-   `/slurm_files`: the folder that contains slurm files that were used to execute the code inside of the training cluster.
 
 ## Info
 
