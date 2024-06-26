@@ -95,14 +95,18 @@ class Webcam:
         if frame is not None:
             image = Image.fromarray(frame)
 
-            image: np.ndarray = use(
-                self.model,
-                image,
-                self.config.image_width,
-                self.config.image_height,
-                image.size[0],
-                image.size[1],
-                self.device,
+            image: np.ndarray = (
+                use(
+                    self.model,
+                    image,
+                    self.config.image_width,
+                    self.config.image_height,
+                    image.size[0],
+                    image.size[1],
+                    self.device,
+                )
+                .cpu()
+                .numpy()
             )
             disparity_normalized = (image - np.min(image)) / (
                 np.max(image) - np.min(image)

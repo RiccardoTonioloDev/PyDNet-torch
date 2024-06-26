@@ -1,6 +1,7 @@
 from typing import Literal
 from Pydnet import Pydnet, Pydnet2
 from Config import Config
+from KittiDataset import KittiDataset
 import torch
 import torchvision.transforms.v2 as transforms
 from PIL import Image
@@ -57,9 +58,8 @@ def post_process_disparity(disp: torch.Tensor) -> torch.Tensor:
     l_disp = disp[0, :, :]
     r_disp = torch.fliplr(disp[1, :, :])
     m_disp = 0.5 * (l_disp + r_disp)
-    l = torch.meshgrid(torch.linspace(0, 1, h), torch.linspace(0, 1, w), indexing="ij")[
-        0
-    ].to(disp.device)
+    l, _ = np.meshgrid(np.linspace(0, 1, w), np.linspace(0, 1, h))
+    l = torch.Tensor(l).to(disp.device)
     l_mask = 1.0 - torch.clamp(20 * (l - 0.05), 0, 1)
     r_mask = torch.fliplr(l_mask)
     return r_mask * l_disp + l_mask * r_disp + (1.0 - l_mask - r_mask) * m_disp
@@ -96,14 +96,18 @@ def use_with_path(
         with Image.open(img_path) as img:
             original_width, original_height = img.size
             start_time = time.time()
-            disp_to_img = use(
-                model,
-                img,
-                config.image_width,
-                config.image_height,
-                original_width,
-                original_height,
-                device,
+            disp_to_img: np.ndarray = (
+                use(
+                    model,
+                    img,
+                    config.image_width,
+                    config.image_height,
+                    original_width,
+                    original_height,
+                    device,
+                )
+                .cpu()
+                .numpy()
             )
             elapsed_time = time.time() - start_time
             print(f"Execution time: {elapsed_time:.2f}s")
@@ -124,7 +128,7 @@ def use(
     original_width: int,
     original_height: int,
     device: torch.device,
-) -> np.ndarray:
+) -> torch.Tensor:
     """
     It will use a Pillow image as an input and provide a pillow depth map as an output.
         `model`: the Pydnet model used
@@ -139,21 +143,19 @@ def use(
     model.to(device)
     img_tensor = from_image_to_tensor(img).to(device)
     img_tensor = tensor_resizer(img_tensor, downscale_width, downscale_height)
+    img_tensor_batch = KittiDataset.from_left_to_left_batch(img_tensor)
     with torch.no_grad():
-        img_disparities: torch.Tensor = model(img_tensor)[0][0, :, :, :]  # [8, H, W]
+
+        img_disparities: torch.Tensor = model(img_tensor_batch)[0][
+            :, 0, :, :
+        ]  # [2, H, W]
         img_disparities = (
             post_process_disparity(img_disparities)
             .unsqueeze(0)
             .unsqueeze(0)  # [1,1,H,W]
         )
-        img_disparities = (
-            tensor_resizer(
-                img_disparities, original_width, original_height, mode="bicubic"
-            )
-            # tensor_resizer(pp_img_disparities, original_width, original_height)
-            .squeeze()
-            .cpu()
-            .numpy()
-        )
+        img_disparities = tensor_resizer(
+            img_disparities, original_width, original_height, mode="bicubic"
+        ).squeeze()
 
     return img_disparities

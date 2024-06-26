@@ -12,7 +12,7 @@ from __future__ import absolute_import, division, print_function
 # only keep warnings and errors
 import os
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 
 import numpy as np
 import argparse
@@ -27,13 +27,20 @@ from monodepth_model import *
 from monodepth_dataloader import *
 from average_gradients import *
 
-parser = argparse.ArgumentParser(description='Monodepth TensorFlow implementation.')
+parser = argparse.ArgumentParser(description="Monodepth TensorFlow implementation.")
 
-parser.add_argument('--encoder', type=str, help='type of encoder, vgg or resnet50', default='vgg')
-parser.add_argument('--image_path', type=str, help='path to the image', required=True)
-parser.add_argument('--checkpoint_path', type=str, help='path to a specific checkpoint to load', required=True)
-parser.add_argument('--input_height', type=int, help='input height', default=256)
-parser.add_argument('--input_width', type=int, help='input width', default=512)
+parser.add_argument(
+    "--encoder", type=str, help="type of encoder, vgg or resnet50", default="vgg"
+)
+parser.add_argument("--image_path", type=str, help="path to the image", required=True)
+parser.add_argument(
+    "--checkpoint_path",
+    type=str,
+    help="path to a specific checkpoint to load",
+    required=True,
+)
+parser.add_argument("--input_height", type=int, help="input height", default=256)
+parser.add_argument("--input_width", type=int, help="input width", default=512)
 
 args = parser.parse_args()
 
@@ -57,8 +64,10 @@ def test_simple(params):
 
     input_image = scipy.misc.imread(args.image_path, mode="RGB")
     original_height, original_width, num_channels = np.shape(input_image)
-    input_image = scipy.misc.imresize(input_image, [args.input_height, args.input_width], interp='lanczos')
-    input_image = np.ndarray.astype(input_image,np.float32) / 255
+    input_image = scipy.misc.imresize(
+        input_image, [args.input_height, args.input_width], interp="lanczos"
+    )
+    input_image = np.ndarray.astype(input_image, np.float32) / 255
     input_images = np.stack((input_image, np.fliplr(input_image)), 0)
 
     # SESSION
@@ -78,17 +87,22 @@ def test_simple(params):
     restore_path = args.checkpoint_path
     train_saver.restore(sess, restore_path)
 
+    # disp = sess.run(model.disp_left_est[0][0, :, :], feed_dict={left: input_images})
     disp = sess.run(model.disp_left_est[0], feed_dict={left: input_images})
-    disp_pp = post_process_disparity(disp.squeeze()).astype(np.float32)
+    disp = post_process_disparity(disp.squeeze()).astype(np.float32)
 
     output_directory = os.path.dirname(args.image_path)
     output_name = os.path.splitext(os.path.basename(args.image_path))[0]
 
-    np.save(os.path.join(output_directory, "{}_disp.npy".format(output_name)), disp_pp)
-    disp_to_img = scipy.misc.imresize(disp_pp.squeeze(), [original_height, original_width])
-    plt.imsave(os.path.join(output_directory, "{}_disp.png".format(output_name)), disp_to_img, cmap='plasma')
+    np.save(os.path.join(output_directory, "{}_disp.npy".format(output_name)), disp)
+    disp_to_img = scipy.misc.imresize(disp.squeeze(), [original_height, original_width])
+    plt.imsave(
+        os.path.join(output_directory, "{}_disp.png".format(output_name)),
+        disp_to_img,
+        cmap="plasma",
+    )
 
-    print('done!')
+    print("done!")
 
 
 def main(_):
@@ -107,10 +121,11 @@ def main(_):
         lr_loss_weight=0,
         full_summary=False,
         lr=None,
-        model_name=None)
+        model_name=None,
+    )
 
     test_simple(params)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.app.run()

@@ -80,6 +80,8 @@ class KittiDataset(Dataset):
 
         # Checking for testing
         if self.mode == "test":
+            if self.config.BlackAndWhite_processing:
+                left_image_tensor = F.rgb_to_grayscale(left_image_tensor)
             return left_image_tensor
 
         try:
@@ -167,3 +169,12 @@ class KittiDataset(Dataset):
             pin_memory=pin_memory,
         )
         return dataloader
+
+    @staticmethod
+    def from_left_to_left_batch(left_image_tensor: torch.Tensor) -> torch.Tensor:
+        """
+        To be used in testing, where we only do evaluations on the left image
+        """
+        left_image_tensor = left_image_tensor.squeeze()
+        left_image_tensor_flipped = transforms.functional.hflip(left_image_tensor)
+        return torch.stack([left_image_tensor, left_image_tensor_flipped], dim=0)
