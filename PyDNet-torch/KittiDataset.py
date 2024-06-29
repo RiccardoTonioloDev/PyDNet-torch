@@ -109,7 +109,9 @@ class KittiDataset(Dataset):
                 right_image_tensor = self.__horizontal_flipper(left_image_tensor_copy)
 
             # Randomly augmenting images
-            if random.random() > 0.5:
+            if (
+                random.random() > 0.5 and not self.config.VerticalFlipAugmentation
+            ):  # The experimental training on VFlip has to be turned off
                 left_image_tensor, right_image_tensor = self.augment_image_pair(
                     left_image_tensor, right_image_tensor
                 )

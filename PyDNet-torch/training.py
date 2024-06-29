@@ -87,11 +87,10 @@ def train(env: Literal["HomeLab", "Cluster"], model: Pydnet | Pydnet2) -> None:
         and config.checkpoint_to_use_path != None
         and config.checkpoint_to_use_path != ""
     ):
+        print("Retraining disabled. Loading checkpoint.")
         checkpoint = torch.load(config.checkpoint_to_use_path)
         model.load_state_dict(checkpoint["model_state_dict"])
-        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-        start_epoch = checkpoint["epoch"]
-        num_epochs += start_epoch
+        print("Fine tuning started.")
 
     # Training cycle
     for epoch in range(start_epoch, num_epochs):

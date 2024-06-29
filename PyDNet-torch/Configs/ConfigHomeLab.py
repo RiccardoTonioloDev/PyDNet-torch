@@ -61,7 +61,19 @@ class ConfigHomeLab:
         # It means that images will have a 50% chance of being flipped upside-down
 
         self.KittiRatioImageSize: bool = False
-        # It will use a 192x640 size for input images.
+        # It will use a 640x192 size for input images.
+
+        self.RatioImageSize320x96: bool = False
+        # It will use a 320x96 size for input images.
+
+        self.RatioImageSize256x128: bool = False
+        # It will use a 256x128 size for input images.
+
+        self.RatioImageSize1024x320: bool = False
+        # It will use a 1024x320 size for input images.
+
+        self.RatioImageSize1280x384: bool = False
+        # It will use a 1280x384 size for input images.
 
         self.PyDNet2_usage: bool = False
         # It means that the model that will be used is PyDNet2 instead of PyDNet
@@ -73,9 +85,29 @@ class ConfigHomeLab:
             self.checkpoint_path += "B&W/"
             count += 1
         elif self.KittiRatioImageSize:
-            self.checkpoint_path += "192x640/"
+            self.checkpoint_path += "640x192/"
             self.image_height = 192
             self.image_width = 640
+            count += 1
+        elif self.RatioImageSize320x96:
+            self.checkpoint_path += "320x96/"
+            self.image_height = 96
+            self.image_width = 320
+            count += 1
+        elif self.RatioImageSize256x128:
+            self.checkpoint_path += "256x128/"
+            self.image_height = 128
+            self.image_width = 256
+            count += 1
+        elif self.RatioImageSize1024x320:
+            self.checkpoint_path += "1024x320/"
+            self.image_height = 320
+            self.image_width = 1024
+            count += 1
+        elif self.RatioImageSize1280x384:
+            self.checkpoint_path += "1280x384/"
+            self.image_height = 384
+            self.image_width = 1280
             count += 1
         elif self.PyDNet2_usage:
             self.checkpoint_path += "PyDNet2/"
