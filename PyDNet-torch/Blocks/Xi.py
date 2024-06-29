@@ -59,9 +59,15 @@ class XiConv2D(nn.Module):
                 padding=0,
             )
 
+        # ASSUNZIONE: non può essere più efficiente di un solo blocco convoluzionale ammenochè non ci sia qualche sorta
+        # di compressione come si fa all'inizio del blocco XiNet. Come di seguito:
         self.attention_module = nn.Sequential(
-            torch.nn.Conv2d(out_channels, out_channels, 1, stride=1, padding=0),
-            torch.nn.Conv2d(out_channels, out_channels, 3, stride=1, padding=1),
+            torch.nn.Conv2d(
+                out_channels, out_channels // gamma, 1, stride=1, padding=0
+            ),
+            torch.nn.Conv2d(
+                out_channels // gamma, out_channels, 3, stride=1, padding=1
+            ),
             nn.Sigmoid(),
         )
 
@@ -141,12 +147,12 @@ class XiNet(nn.Module):
         return self.__XiNet_blocks(x, x)
 
 
-xinet1 = XiNet(3, 16, 4, 0, 0.4, 4, 2)
-xinet2 = XiNet(16, 32, 4, 1, 0.4, 4, 2)
-xinet3 = XiNet(32, 64, 4, 2, 0.4, 4, 2)
-xinet4 = XiNet(64, 96, 4, 3, 0.4, 4, 2)
-xinet5 = XiNet(96, 128, 4, 4, 0.4, 4, 2)
-xinet6 = XiNet(128, 192, 4, 5, 0.4, 4, 2)
+# xinet1 = XiNet(3, 16, 4, 0, 0.4, 4, 2)
+# xinet2 = XiNet(16, 32, 4, 1, 0.4, 4, 2)
+# xinet3 = XiNet(32, 64, 4, 2, 0.4, 4, 2)
+# xinet4 = XiNet(64, 96, 4, 3, 0.4, 4, 2)
+# xinet5 = XiNet(96, 128, 4, 4, 0.4, 4, 2)
+# xinet6 = XiNet(128, 192, 4, 5, 0.4, 4, 2)
 
 
 def count_params(model: nn.Module) -> int:
@@ -154,11 +160,16 @@ def count_params(model: nn.Module) -> int:
 
 
 print(
-    "Number of parameters: ",
-    count_params(xinet1)
-    + count_params(xinet2)
-    + count_params(xinet3)
-    + count_params(xinet4)
-    + count_params(xinet5)
-    + count_params(xinet6),
+    "Number of parameters single block: ",
+    count_params(XiNet(3, 16, 1, 0, 0.4, 4, 2)),
 )
+
+# print(
+#     "Number of parameters: ",
+#     count_params(xinet1)
+#     + count_params(xinet2)
+#     + count_params(xinet3)
+#     + count_params(xinet4)
+#     + count_params(xinet5)
+#     + count_params(xinet6),
+# )
