@@ -88,7 +88,7 @@ class ConfigCluster:
             self.checkpoint_path += "HSV/"
             count += 1
         elif self.BlackAndWhite_processing:
-            self.checkpoint_path += "B&W/"
+            self.checkpoint_path += "BandW/"
             count += 1
         elif self.KittiRatioImageSize:
             self.checkpoint_path += "640x192/"
