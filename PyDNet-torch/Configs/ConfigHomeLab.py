@@ -63,12 +63,6 @@ class ConfigHomeLab:
         self.KittiRatioImageSize: bool = False
         # It will use a 640x192 size for input images.
 
-        self.RatioImageSize320x96: bool = False
-        # It will use a 320x96 size for input images.
-
-        self.RatioImageSize256x128: bool = False
-        # It will use a 256x128 size for input images.
-
         self.RatioImageSize1024x320: bool = False
         # It will use a 1024x320 size for input images.
 
@@ -88,16 +82,6 @@ class ConfigHomeLab:
             self.checkpoint_path += "640x192/"
             self.image_height = 192
             self.image_width = 640
-            count += 1
-        elif self.RatioImageSize320x96:
-            self.checkpoint_path += "320x96/"
-            self.image_height = 96
-            self.image_width = 320
-            count += 1
-        elif self.RatioImageSize256x128:
-            self.checkpoint_path += "256x128/"
-            self.image_height = 128
-            self.image_width = 256
             count += 1
         elif self.RatioImageSize1024x320:
             self.checkpoint_path += "1024x320/"
