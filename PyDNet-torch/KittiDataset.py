@@ -198,6 +198,9 @@ class KittiDataset(Dataset):
         Returns a Tensor[2,3,H,W] corresponding to the left image stacked on top of the
         horizontally-flipped-left image.
         """
-        image_tensor = image_tensor.squeeze()
+        if len(image_tensor.shape) == 4:
+            image_tensor = image_tensor.squeeze(0)
+        elif len(image_tensor.shape) == 2:
+            image_tensor = image_tensor.unsqueeze(0)
         left_image_tensor_flipped = transforms.functional.hflip(image_tensor)
         return torch.stack([image_tensor, left_image_tensor_flipped], dim=0)

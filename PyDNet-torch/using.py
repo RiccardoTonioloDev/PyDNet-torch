@@ -175,7 +175,6 @@ def use(
         )
     img_tensor_batch = KittiDataset.from_left_to_left_batch(img_tensor)
     with torch.no_grad():
-
         img_disparities: torch.Tensor = model(img_tensor_batch)[0][
             :, 0, :, :
         ]  # [2, H, W]
