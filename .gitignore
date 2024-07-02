@@ -166,3 +166,5 @@ bash_files/
 PyDNet-torch/outputfiles/checkpoints/*/*.pth.tar
 PyDNet-torch/outputfiles/checkpoints/*.pth.tar
 PyDNet-torch/outputfiles/outputs/*.npy
+PyDNet-torch/wandb/
+PyXiNet/wandb/

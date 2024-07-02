@@ -1,1 +1,0 @@
-{"image_loss": 2.575404423055261e-08, "disp_gradient_loss": 1.2217894251875805e-08, "lr_loss": 2.4866118053523678e-08, "total_loss": 5.1841951176356815e-08, "avg_disparity_in_first_level": 7.447999161858121e-11, "_timestamp": 1718376872.7725344, "_runtime": 93.48008346557617, "_step": 260, "_wandb": {"runtime": 92}}
