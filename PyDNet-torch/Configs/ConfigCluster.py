@@ -34,7 +34,7 @@ class ConfigCluster:
         # Output directory for the disparities file and for cluster
         # logs (if you use slurm files)
         self.checkpoint_path: str = (
-            "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/"
+            "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/CS/"
         )
         # Directory to be used to store checkpoint files.
 
