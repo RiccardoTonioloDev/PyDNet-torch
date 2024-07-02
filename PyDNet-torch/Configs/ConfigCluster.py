@@ -10,7 +10,7 @@ class ConfigCluster:
             "/home/rtoniolo/Depth/PyDNet-torch/filenames/eigen_test_files_png.txt"
         )
         self.batch_size: int = 8
-        self.num_epochs: int = 200
+        self.num_epochs: int = 50
         self.learning_rate: float = 1e-4
         self.image_width: int = 512
         self.image_height: int = 256
