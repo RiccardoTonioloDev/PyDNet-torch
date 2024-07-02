@@ -167,4 +167,7 @@ PyDNet-torch/outputfiles/checkpoints/*/*.pth.tar
 PyDNet-torch/outputfiles/checkpoints/*.pth.tar
 PyDNet-torch/outputfiles/outputs/*.npy
 PyDNet-torch/wandb/
+PyXiNet/outputfiles/checkpoints/*/*.pth.tar
+PyXiNet/outputfiles/checkpoints/*.pth.tar
+PyXiNet/outputfiles/outputs/*.npy
 PyXiNet/wandb/
