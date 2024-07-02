@@ -34,6 +34,12 @@ class KittiDataset(Dataset):
         """
         self.config = config.get_configuration()
         self.filenames_df = pd.read_csv(filenames_file_path, sep=r"\s+", header=None)
+        self.leftImagePathPrefix = ""
+        self.rightImagePathPrefix = ""
+        if "cityscapes" in filenames_file_path:
+            self.leftImagePathPrefix = "leftImg8bit"
+            self.rightImagePathPrefix = "rightImg8bit"
+
         self.data_path = data_path
         self.image_tensorizer = transforms.Compose(
             [
@@ -60,8 +66,12 @@ class KittiDataset(Dataset):
     def __getitem__(self, i: int) -> Tuple[torch.Tensor, torch.Tensor] | torch.Tensor:
         path_ith_row_left, path_ith_row_right = self.filenames_df.iloc[i]
 
-        left_image_path = os.path.join(self.data_path, path_ith_row_left)
-        right_image_path = os.path.join(self.data_path, path_ith_row_right)
+        left_image_path = os.path.join(
+            self.data_path, self.leftImagePathPrefix, path_ith_row_left
+        )
+        right_image_path = os.path.join(
+            self.data_path, self.rightImagePathPrefix, path_ith_row_right
+        )
 
         try:
             with Image.open(left_image_path) as left_image:
