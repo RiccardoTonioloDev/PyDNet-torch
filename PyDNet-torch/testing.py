@@ -116,13 +116,15 @@ def generate_test_disparities(
         print("Doing image #", i + 1)
         left_img: torch.Tensor = left_img.to(device)
         with torch.no_grad():
-            # disp: torch.Tensor = model(left_img)[0][:, 0, :, :].unsqueeze(1)
-            # upscaled_disparities = Pydnet.upscale_img(disp, (256, 512))
-            # disparities[i] = upscaled_disparities[0, 0, :, :].cpu().numpy()
-            disp = use(model, left_img, 512, 256, 512, 256, device)
-
-            # disparities[i] = disp[0, 0, :, :].cpu().numpy()
-            disparities[i] = disp.cpu().numpy()
+            if True:
+                # without post processing
+                disp: torch.Tensor = model(left_img)[0][:, 0, :, :].unsqueeze(1)
+                upscaled_disparities = Pydnet.upscale_img(disp, (256, 512))
+                disparities[i] = upscaled_disparities[0, 0, :, :].cpu().numpy()
+            else:
+                # with post processing
+                disp = use(model, left_img, 512, 256, 512, 256, device)
+                disparities[i] = disp.cpu().numpy()
     print("Computing complete.")
     print("Saving disparities.")
     output_directory = "."
