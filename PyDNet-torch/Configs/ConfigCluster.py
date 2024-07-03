@@ -46,7 +46,7 @@ class ConfigCluster:
         # parameter is set to True.
 
         self.checkpoint_to_use_path: str = (
-            "./outputfiles/checkpoints/CS/checkpoint_e048.pth.tar"
+            "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/CS/checkpoint_e048.pth.tar"
         )
         # Path of the checkpoint file to be used inside the model.
 
