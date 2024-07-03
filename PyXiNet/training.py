@@ -7,7 +7,7 @@ import torch.utils.data
 import wandb
 import torch.optim as optim
 from KittiDataset import KittiDataset
-from PyXiNet.PyXiNet import PyXiNet
+from PyXiNet import PyXiNet
 from Config import Config
 from Losses import L_total, generate_image_left, generate_image_right
 from testing import evaluate_on_test_set

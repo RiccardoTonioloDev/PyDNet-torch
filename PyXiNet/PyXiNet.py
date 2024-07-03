@@ -80,13 +80,13 @@ class PyXiNet(nn.Module):
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
         # Level's starting blocks
-        conv1 = self.__downsizing_block_1(x)  # [8, 16, 128, 256]
+        conv1 = self.__downsizing_block_1(x)  # [8, 7, 128, 256]
         print("size conv1: ", conv1.size())
-        conv2 = self.__downsizing_block_2(conv1)  # [8, 32, 64, 128]
+        conv2 = self.__downsizing_block_2(conv1)  # [8, 16, 64, 128]
         print("size conv2: ", conv2.size())
-        conv3 = self.__downsizing_block_3(conv2)  # [8, 64, 32, 64]
+        conv3 = self.__downsizing_block_3(conv2)  # [8, 36, 32, 64]
         print("size conv3: ", conv3.size())
-        conv4 = self.__downsizing_block_4(conv3)  # [8, 96, 16, 32]
+        conv4 = self.__downsizing_block_4(conv3)  # [8, 80, 16, 32]
         print("size conv4: ", conv4.size())
 
         # LEVEL 4
@@ -160,10 +160,3 @@ class PyXiNet(nn.Module):
 
 def count_params(model: nn.Module) -> int:
     return (sum(p.numel() for p in model.parameters() if p.requires_grad),)
-
-
-pixi = PyXiNet("M")
-print("conteggio parametri: ", count_params(pixi))
-x = torch.rand([1, 3, 256, 512])
-y = pixi(x)[0]
-print("size risultato pixi (risoluzione massima): ", y.size())
