@@ -16,4 +16,4 @@ conda activate PyDNet-torch
 
 echo "Executing python code"
 # execution of training code
-python3 /home/rtoniolo/Depth/PyXiNet/main.py --mode=train --env=Cluster
+python3 /home/rtoniolo/Depth/PyXiNet/main.py --mode=train --env=Cluster --efficiency=L
