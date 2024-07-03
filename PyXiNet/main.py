@@ -5,7 +5,7 @@ from evaluating import eval_disparities_file
 from using import use_with_path
 from webcam import Webcam
 import tkinter as tk
-from PyXiNet.PyXiNet import PyXiNet
+from PyXiNet import PyXiNet
 
 parser = argparse.ArgumentParser(description="PyDNet pytorch implementation.")
 

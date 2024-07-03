@@ -1,5 +1,5 @@
 from typing import Literal
-from PyXiNet.PyXiNet import PyXiNet
+from PyXiNet import PyXiNet
 from Config import Config
 from KittiDataset import KittiDataset
 import torch

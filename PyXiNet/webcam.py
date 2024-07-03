@@ -5,7 +5,7 @@ import subprocess
 import numpy as np
 import threading
 from using import use
-from PyXiNet.PyXiNet import PyXiNet
+from PyXiNet import PyXiNet
 from Config import Config
 import torch
 from matplotlib import cm
