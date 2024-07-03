@@ -34,7 +34,7 @@ class ConfigCluster:
         # Output directory for the disparities file and for cluster
         # logs (if you use slurm files)
         self.checkpoint_path: str = (
-            "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/CS+K/"
+            "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/VFlip/"
         )
         # Directory to be used to store checkpoint files.
 
@@ -45,9 +45,7 @@ class ConfigCluster:
         # Not used anymore but useful to enable certain code sections only when this
         # parameter is set to True.
 
-        self.checkpoint_to_use_path: str = (
-            "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/CS/checkpoint_e048.pth.tar"
-        )
+        self.checkpoint_to_use_path: str = ""
         # Path of the checkpoint file to be used inside the model.
 
         self.disparities_to_use: str = ""
@@ -65,7 +63,7 @@ class ConfigCluster:
         self.BlackAndWhite_processing: bool = False
         # It means that images will be processed only in the gray scale (single channel).
 
-        self.VerticalFlipAugmentation: bool = False
+        self.VerticalFlipAugmentation: bool = True
         # It means that images will have a 50% chance of being flipped upside-down.
 
         self.KittiRatioImageSize: bool = False
