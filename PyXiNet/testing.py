@@ -3,7 +3,7 @@ import numpy as np
 import os
 from typing import List, Literal
 from KittiDataset import KittiDataset
-from PyXiNet.PyXiNet import PyXiNet
+from PyXiNet import PyXiNet
 from Losses import L_total, generate_image_left, generate_image_right
 from Configs.ConfigCluster import ConfigCluster
 from Configs.ConfigHomeLab import ConfigHomeLab
