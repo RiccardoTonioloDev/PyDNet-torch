@@ -2,12 +2,12 @@ class ConfigCluster:
 
     def __init__(self):
         self.model_name: str = "PyDNet-V1-torch"
-        self.data_path: str = "/home/rtoniolo/Datasets/CityScapes/"
+        self.data_path: str = "/home/rtoniolo/Datasets/kitti/"
         self.filenames_file_training: str = (
-            "/home/rtoniolo/Depth/PyDNet-torch/filenames/cityscapes_train_files_png.txt"
+            "/home/rtoniolo/Depth/PyDNet-torch/filenames/eigen_train_files_png.txt"
         )
         self.filenames_file_testing: str = (
-            "/home/rtoniolo/Depth/PyDNet-torch/filenames/cityscapes_test_files_png.txt"
+            "/home/rtoniolo/Depth/PyDNet-torch/filenames/eigen_test_files_png.txt"
         )
         self.batch_size: int = 8
         self.num_epochs: int = 50
@@ -34,18 +34,20 @@ class ConfigCluster:
         # Output directory for the disparities file and for cluster
         # logs (if you use slurm files)
         self.checkpoint_path: str = (
-            "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/CS/"
+            "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/CS+K/"
         )
         # Directory to be used to store checkpoint files.
 
-        self.retrain: bool = True
+        self.retrain: bool = False
         # If True it retrains the model without using checkpoints
 
         self.debug: bool = False
         # Not used anymore but useful to enable certain code sections only when this
         # parameter is set to True.
 
-        self.checkpoint_to_use_path: str = ""
+        self.checkpoint_to_use_path: str = (
+            "/home/rtoniolo/Depth/PyDNet-torch/outputfiles/checkpoints/CS/checkpoint_e048.pth.tar"
+        )
         # Path of the checkpoint file to be used inside the model.
 
         self.disparities_to_use: str = ""
