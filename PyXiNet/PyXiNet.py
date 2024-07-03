@@ -81,13 +81,9 @@ class PyXiNet(nn.Module):
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
         # Level's starting blocks
         conv1 = self.__downsizing_block_1(x)  # [8, 7, 128, 256]
-        print("size conv1: ", conv1.size())
         conv2 = self.__downsizing_block_2(conv1)  # [8, 16, 64, 128]
-        print("size conv2: ", conv2.size())
         conv3 = self.__downsizing_block_3(conv2)  # [8, 36, 32, 64]
-        print("size conv3: ", conv3.size())
         conv4 = self.__downsizing_block_4(conv3)  # [8, 80, 16, 32]
-        print("size conv4: ", conv4.size())
 
         # LEVEL 4
         conv4b = self.__conv_block_4(conv4)
