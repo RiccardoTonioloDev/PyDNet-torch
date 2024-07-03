@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --nodelist=dellcuda2
+#SBATCH --nodelist=debug04
 #SBATCH --job-name=pydnet_torch_VFlip
-#SBATCH --partition=allgroups
+#SBATCH --partition=debug
 #SBATCH --ntasks=1
 #SBATCH --mem=16G
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=6
 #SBATCH --gres=gpu:1
-#SBATCH --time=3-00:00:00
+#SBATCH --time=1-00:00:00
 #SBATCH --error=../PyDNet-torch/outputfiles/outputs/pydnet_torch_VFlip.err
 #SBATCH --output=../PyDNet-torch/outputfiles/outputs/pydnet_torch_VFlip.out
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodelist=debug00
+#SBATCH --nodelist=debug03
 #SBATCH --job-name=pydnet_torch_ftK
 #SBATCH --partition=debug
 #SBATCH --ntasks=1
