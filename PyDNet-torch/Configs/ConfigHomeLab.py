@@ -38,7 +38,7 @@ class ConfigHomeLab:
         # parameter is set to True.
 
         self.checkpoint_to_use_path: str = (
-            "./outputfiles/checkpoints/PyDNet-torch_50.pth.tar"
+            "./outputfiles/checkpoints/CS+K/PyDNet-torch_CSK.pth.tar"
         )
         # Path of the checkpoint file to be used inside the model.
 
