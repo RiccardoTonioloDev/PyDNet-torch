@@ -38,7 +38,7 @@ class ConfigHomeLab:
         # parameter is set to True.
 
         self.checkpoint_to_use_path: str = (
-            "./outputfiles/checkpoints/CS+K/PyDNet-torch_CSK.pth.tar"
+            "./outputfiles/checkpoints/PyDNet2/PyDNet-torch_V2.pth.tar"
         )
         # Path of the checkpoint file to be used inside the model.
 
@@ -69,7 +69,7 @@ class ConfigHomeLab:
         self.RatioImageSize1280x384: bool = False
         # It will use a 1280x384 size for input images.
 
-        self.PyDNet2_usage: bool = False
+        self.PyDNet2_usage: bool = True
         # It means that the model that will be used is PyDNet2 instead of PyDNet
         count = 0
         if self.HSV_processing:
