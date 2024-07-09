@@ -1,0 +1,9 @@
+# Release 0.2.0
+
+1. Added metrics;
+2. Improved checkpointing logic;
+3. Added XiNet (https://shorturl.at/mtHT0);
+4. dded image classification recipe;
+5. Added object detection recipe;
+6. Added object detection recipe;
+7. New parse configuration that exploits python files for config;
