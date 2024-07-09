@@ -503,14 +503,6 @@ class MicroMind(ABC):
                 f"Starting from epoch {self.start_epoch + 1}."
                 + f" Training is scheduled for {epochs} epochs."
             )
-        # TODO: mettere i parametri di configurazione giusti
-        wandb.init(
-            project=config.model_name,
-            config={
-                "num_epochs": config.num_epochs,
-                "learning_rate": config.learning_rate,
-            },
-        )
 
         for e in range(self.start_epoch + 1, epochs + 1):
             self.current_epoch = e

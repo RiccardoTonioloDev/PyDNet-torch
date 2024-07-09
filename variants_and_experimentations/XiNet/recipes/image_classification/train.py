@@ -15,6 +15,7 @@ Authors:
 
 import torch
 import torch.nn as nn
+import wandb
 from prepare_data import create_loaders, setup_mixup
 from timm.loss import (
     BinaryCrossEntropy,
@@ -193,6 +194,14 @@ if __name__ == "__main__":
 
     top1 = mm.Metric("top1_acc", top_k_accuracy(k=1), eval_only=True)
     top5 = mm.Metric("top5_acc", top_k_accuracy(k=5), eval_only=True)
+
+    wandb.init(
+        project=hparams.model,
+        config={
+            "num_epochs": hparams.epochs,
+            "learning_rate": hparams.lr,
+        },
+    )
 
     mind.train(
         epochs=hparams.epochs,
