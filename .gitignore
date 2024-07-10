@@ -177,3 +177,4 @@ PyXiNet/outputfiles/outputs/*.out
 PyXiNet/wandb/
 slurm_files/wandb/
 outputfiles/*
+.DS_Store
