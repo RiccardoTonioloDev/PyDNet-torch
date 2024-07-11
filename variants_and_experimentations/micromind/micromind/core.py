@@ -626,7 +626,8 @@ class MicroMind(ABC):
             if (self.current_epoch + 1) % m.eval_period == 0:
                 val_metrics["val_" + m.name] = m.reduce(Stage.val, True)
 
-        val_metrics.update({"avg_val_loss": loss_epoch / (idx + 1)})
+        val_metrics.update({"val_loss": loss_epoch / (idx + 1)})
+        wandb.log({"avg_val_loss": loss_epoch_single})
 
         pbar.close()
 
