@@ -13,6 +13,7 @@ Authors:
     - Francesco Paissan, 2023
 """
 
+import os
 import torch
 import torch.nn as nn
 import wandb
@@ -178,7 +179,7 @@ def top_k_accuracy(k=1):
 
 if __name__ == "__main__":
     assert len(sys.argv) > 1, "Please pass the configuration file to the script."
-    hparams = parse_configuration(sys.argv[1])
+    hparams = parse_configuration(os.path.join(os.path.abspath(__file__), sys.argv[1]))
 
     train_loader, val_loader = create_loaders(hparams)
 
