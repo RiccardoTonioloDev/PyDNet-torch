@@ -525,7 +525,8 @@ class MicroMind(ABC):
                 with self.accelerator.autocast():
                     model_out = self(batch)
                     loss = self.compute_loss(model_out, batch)
-                    loss_epoch += loss.item()
+                    loss_epoch_single = loss.item()
+                    loss_epoch += loss_epoch_single
 
                 self.accelerator.backward(loss)
                 self.opt.step()
@@ -548,6 +549,7 @@ class MicroMind(ABC):
                         running_train["train_" + m.name] = m.reduce(Stage.train)
 
                 running_train.update({"train_loss": loss_epoch / (idx + 1)})
+                wandb.log({"train_loss": loss_epoch_single})
 
                 pbar.set_postfix(**running_train)
 
@@ -562,7 +564,7 @@ class MicroMind(ABC):
                     train_metrics["train_" + m.name] = m.reduce(Stage.train, True)
 
             train_metrics.update({"train_loss": loss_epoch / (idx + 1)})
-            wandb.log({"train_loss": loss_epoch / (idx + 1)})
+            wandb.log({"avg_train_loss": loss_epoch / (idx + 1)})
 
             if "val" in datasets:
                 val_metrics = self.validate()
@@ -611,19 +613,20 @@ class MicroMind(ABC):
                     if (self.current_epoch + 1) % m.eval_period == 0:
                         m(model_out, batch, Stage.val, self.device)
 
-                loss_epoch += loss.item()
+                loss_epoch_single = loss.item()
+                loss_epoch += loss_epoch_single
                 pbar.set_postfix(loss=loss_epoch / (idx + 1))
 
                 if self.debug and idx > 10:
                     break
-            wandb.log({"val_loss": loss_epoch / (idx + 1)})
+                wandb.log({"val_loss": loss_epoch_single})
 
         val_metrics = {}
         for m in self.metrics:
             if (self.current_epoch + 1) % m.eval_period == 0:
                 val_metrics["val_" + m.name] = m.reduce(Stage.val, True)
 
-        val_metrics.update({"val_loss": loss_epoch / (idx + 1)})
+        val_metrics.update({"avg_val_loss": loss_epoch / (idx + 1)})
 
         pbar.close()
 
