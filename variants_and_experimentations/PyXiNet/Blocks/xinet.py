@@ -22,9 +22,7 @@ def autopad(k: int, p: Optional[int] = None):
         Padding value to be applied.
 
     """
-    if (
-        p is None
-    ):  # if no padding was specified, it uses the kernel to determine the padding to apply
+    if p is None:
         p = k // 2 if isinstance(k, int) else [x // 2 for x in k]  # auto-pad
     return p
 
@@ -104,25 +102,15 @@ class XiConv(nn.Module):
         self.batchnorm = batchnorm
         self.dropout_rate = dropout_rate
 
-        if skip_tensor_in:  # if we accept a skip broadcasting connection
+        if skip_tensor_in:
             assert skip_res is not None, "Specifcy shape of skip tensor."
-            self.adaptive_pooling = nn.AdaptiveAvgPool2d(  # we use the provided skip shape to perform an adaptive
-                # avg pooling, to obtain the output sizes we want.
+            self.adaptive_pooling = nn.AdaptiveAvgPool2d(
                 (int(skip_res[0]), int(skip_res[1]))
             )
-            # AdaptiveAvgPool2d allows us to define the output sizes of the tensor, and by itself
-            # it decides the kernel size and the strides to use to obtain those output sizes.
 
-        if (
-            self.compression > 1
-        ):  # if there is a compression factor, it will be applied using the pw-convolution
+        if self.compression > 1:
             self.compression_conv = nn.Conv2d(
-                c_in,
-                c_out // self.compression,
-                1,
-                1,
-                groups=groups,
-                bias=False,  # No bias term for the pw-convolution
+                c_in, c_out // self.compression, 1, 1, groups=groups, bias=False
             )
         self.main_conv = nn.Conv2d(
             c_out // self.compression if self.compression > 1 else c_in,
@@ -131,21 +119,16 @@ class XiConv(nn.Module):
             stride,
             groups=groups,
             padding=autopad(kernel_size, padding),
-            bias=False,  # No bias term even in the main convolution
+            bias=False,
         )
         self.act = (
             nn.SiLU()
             if act is True
             else (act if isinstance(act, nn.Module) else nn.Identity())
-        )  # it uses the SiLU activation function if act is set to true.
-        # However we can set our activation function if we want, otherwise the identity activation function
-        # will be used.
+        )
 
         if attention:
-            if (
-                attention_lite
-            ):  # if we choose the attention lite we can compress the attention convolution, similar
-                # to what it was done in the first part of the XiConv block.
+            if attention_lite:
                 self.att_pw_conv = nn.Conv2d(
                     c_out, self.attention_lite_ch_in, 1, 1, groups=groups, bias=False
                 )
@@ -163,8 +146,6 @@ class XiConv(nn.Module):
         if pool:
             self.mp = nn.MaxPool2d(pool)
         if skip_tensor_in:
-            # if it accepts a skip broadcast connection, it compresses the broadcast connection to the same
-            # channel size of the output of the first pw-convolution, before using the main convolution.
             self.skip_conv = nn.Conv2d(
                 skip_channels,
                 c_out // self.compression,
@@ -192,39 +173,27 @@ class XiConv(nn.Module):
         """
         s = None
         # skip connection
-        if isinstance(
-            x, list
-        ):  # if we are passing a list, it means that the first element of the list is the real
-            # input tensor, while the second one is the broadcasted tensor.
-
-            # -----------------------------------------------------------
+        if isinstance(x, list):
             # s = F.adaptive_avg_pool2d(x[1], output_size=x[0].shape[2:])
-            # -----------------------------------------------------------
-
-            # so here we resize in the dimensions of the broadcasted tensor
             s = self.adaptive_pooling(x[1])
-            # and here we compress in the channels of the broadcasted tensor
             s = self.skip_conv(s)
-            # finally we save as x the real input tensor
             x = x[0]
 
         # compression convolution
         if self.compression > 1:
-            x = self.compression_conv(x)  # compression of the channels if gamma > 1
+            x = self.compression_conv(x)
 
         if s is not None:
-            x = (
-                x + s
-            )  # if the skipped broadcast tensor was passed, we apply the skip connection
+            x = x + s
 
-        if self.pool:  # if a pooling operation was set, then it applies it
+        if self.pool:
             x = self.mp(x)
 
         # main conv and activation
-        x = self.main_conv(x)  # applying the main convolution
-        if self.batchnorm:  # if a normal batch operation was set, then it applies it
+        x = self.main_conv(x)
+        if self.batchnorm:
             x = self.bn(x)
-        x = self.act(x)  # it applies the activation function after the main convolution
+        x = self.act(x)
 
         # attention conv
         if self.attention:
@@ -233,10 +202,10 @@ class XiConv(nn.Module):
             else:
                 att_in = x
             y = self.att_act(self.att_conv(att_in))
-            x = x * y  # applying attention with an element-wise multiplication
+            x = x * y
 
         if self.dropout_rate > 0:
-            x = self.do(x)  # doing a dropout iteration if set
+            x = self.do(x)
 
         return x
 
@@ -303,14 +272,26 @@ class XiNet(nn.Module):
             nn.BatchNorm2d(int(base_filters * alpha)),
             nn.SiLU(),
         )
+        print(f"Conv 0 Cin/Cout: {input_shape[0]}/{int(base_filters * alpha)}")
         count_downsample += 1
 
         num_filters = [int(2 ** (base_filters**0.5 + i)) for i in range(0, num_layers)]
-        skip_channels_num = int(base_filters * 2 * alpha)
+        # My Change
+        num_filters[0] = (
+            base_filters  # did so because otherwise it won't match the number of Cout/Cin between the first two layers
+        )
+        # My Change
+        # skip_channels_num = int(base_filters * 2 * alpha)
+        skip_channels_num = int(
+            num_filters[1] * alpha
+        )  # fixed the number of channels of the skipped broadcasted tensor
 
         for i in range(
             len(num_filters) - 2
         ):  # Account for the last two layers separately
+            print(
+                f"Conv (pool 2) {i+1} Cin/Cout: {int(num_filters[i] * alpha)}/{int(num_filters[i + 1] * alpha)}"
+            )
             self._layers.append(
                 XiConv(
                     int(num_filters[i] * alpha),
@@ -325,6 +306,9 @@ class XiNet(nn.Module):
                 )
             )
             count_downsample += 1
+            print(
+                f"Conv {i+1} Cin/Cout: {int(num_filters[i + 1] * alpha)}/{int(num_filters[i + 1] * alpha)}"
+            )
             self._layers.append(
                 XiConv(
                     int(num_filters[i + 1] * alpha),
@@ -351,6 +335,9 @@ class XiNet(nn.Module):
                 attention=False,
             )
         )
+        print(
+            f"Conv (no attention) {len(num_filters)-2} Cin/Cout: {int(num_filters[-2] * alpha)}/{int(num_filters[-1] * alpha)}"
+        )
         # count_downsample += 1
         self._layers.append(
             XiConv(
@@ -363,6 +350,9 @@ class XiNet(nn.Module):
                 skip_channels=skip_channels_num,
                 attention=False,
             )
+        )
+        print(
+            f"Conv (no attention) {len(num_filters)-1} Cin/Cout: {int(num_filters[-1] * alpha)}/{int(num_filters[-1] * alpha)}"
         )
 
         if self.return_layers is not None:
@@ -411,3 +401,14 @@ class XiNet(nn.Module):
             return x, ret
 
         return x
+
+
+# xn = XiNet([3, 256, 512], 0.4, 4, 3, base_filters=16)
+# x = torch.rand([8, 3, 256, 512])
+# print(xn(x).size())  # -> [8, 25, 64, 128]
+# print(sum([p.numel() for p in xn.parameters()]))  # -> 5086 (vs. 2768 enc lv 1)
+
+xn = XiNet([32, 64, 128], 0.4, 4, 3, base_filters=48)
+x = torch.rand([8, 32, 64, 128])
+print(xn(x).size())  # -> [8, 25, 64, 128]
+print(sum([p.numel() for p in xn.parameters()]))  # -> 5086 (vs. 2768 enc lv 1)

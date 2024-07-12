@@ -47,3 +47,13 @@ class LevelConvolutionsBlock(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.__block(x)
+
+
+# L1
+# print(sum(p.numel() for p in LevelConvolutionsBlock(16 + 8).parameters())) -> 96968
+# L2
+# print(sum(p.numel() for p in LevelConvolutionsBlock(32 + 8).parameters())) -> 110792
+# L3
+# print(sum(p.numel() for p in LevelConvolutionsBlock(64 + 8).parameters())) -> 138440
+# L4
+# print(sum(p.numel() for p in LevelConvolutionsBlock(96).parameters())) -> 159176
