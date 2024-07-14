@@ -34,10 +34,6 @@ class XiEncoder(nn.Module):
         self.activation = nn.LeakyReLU(0.2)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        print("----------------------ENTERING-------------------------")
-        print(x.size())
         x = self.xn(x)
-        print(x.size())
         x = self.deconv(x)
-        print(x.size())
         return self.activation(x)
