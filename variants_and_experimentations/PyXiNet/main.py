@@ -22,23 +22,12 @@ parser.add_argument(
     type=str,
     help="The path of the image to be used to make its disparity heatmap.",
 )
-parser.add_argument(
-    "--efficiency",
-    type=str,
-    help="[S,M,L]\nS is the smallest model, L is the largest.",
-    default="L",
-)
 
 args = parser.parse_args()
 
 if args.env not in ["HomeLab", "Cluster"]:
     print(
         "You inserted the wrong mode argument in env. Choose between: 'HomeLab' and 'Cluster'."
-    )
-    exit(0)
-if args.efficiency not in ["S", "M", "L"]:
-    print(
-        "You inserted the wrong efficiency argument in env. Choose between: 'S', 'M' and 'L'."
     )
     exit(0)
 

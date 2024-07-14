@@ -4,10 +4,10 @@ class ConfigCluster:
         self.model_name: str = "PyXiNet"
         self.data_path: str = "/home/rtoniolo/Datasets/kitti/"
         self.filenames_file_training: str = (
-            "/home/rtoniolo/Depth/PyXiNet/filenames/eigen_train_files_png.txt"
+            "/home/rtoniolo/Depth/variants_and_experimentations/PyXiNet/filenames/eigen_train_files_png.txt"
         )
         self.filenames_file_testing: str = (
-            "/home/rtoniolo/Depth/PyXiNet/filenames/eigen_test_files_png.txt"
+            "/home/rtoniolo/Depth/variants_and_experimentations/PyXiNet/filenames/eigen_test_files_png.txt"
         )
         self.batch_size: int = 8
         self.num_epochs: int = 50
@@ -32,11 +32,13 @@ class ConfigCluster:
         self.weight_SSIM: float = 0.85
         # Weight between SSIM and L1 in the image loss
 
-        self.output_directory: str = "/home/rtoniolo/Depth/PyXiNet/outputfiles/outputs/"
+        self.output_directory: str = (
+            "/home/rtoniolo/Depth/variants_and_experimentations/PyXiNet/outputfiles/outputs/"
+        )
         # Output directory for the disparities file and for cluster
         # logs (if you use slurm files)
         self.checkpoint_path: str = (
-            "/home/rtoniolo/Depth/PyXiNet/outputfiles/checkpoints/"
+            "/home/rtoniolo/Depth/variants_and_experimentations/PyXiNet/outputfiles/checkpoints/"
         )
         # Directory to be used to store checkpoint files.
 
