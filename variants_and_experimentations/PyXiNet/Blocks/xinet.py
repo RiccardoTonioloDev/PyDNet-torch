@@ -273,7 +273,6 @@ class XiNet(nn.Module):
             nn.BatchNorm2d(int(base_filters * alpha)),
             nn.SiLU(),
         )
-        print(f"Conv 0 Cin/Cout: {input_shape[0]}/{int(base_filters * alpha)}")
         count_downsample += 1
 
         num_filters = [int(2 ** (base_filters**0.5 + i)) for i in range(0, num_layers)]
