@@ -6,6 +6,7 @@ from using import use_with_path
 from webcam import Webcam
 import tkinter as tk
 from PyXiNet import PyXiNet
+from Config import Config
 
 parser = argparse.ArgumentParser(description="PyDNet pytorch implementation.")
 
@@ -41,8 +42,7 @@ if args.efficiency not in ["S", "M", "L"]:
     )
     exit(0)
 
-model = None
-model = PyXiNet(args.efficiency)
+model = PyXiNet(Config(args.env).get_configuration())
 
 if args.mode == "train":
     train(args.env, model)

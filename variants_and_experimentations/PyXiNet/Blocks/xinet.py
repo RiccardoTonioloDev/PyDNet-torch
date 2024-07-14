@@ -244,6 +244,7 @@ class XiNet(nn.Module):
     def __init__(
         self,
         input_shape: List,
+        memo_output_channels: List[int],
         alpha: float = 1.0,
         gamma: float = 4.0,
         num_layers: int = 5,
@@ -289,9 +290,6 @@ class XiNet(nn.Module):
         for i in range(
             len(num_filters) - 2
         ):  # Account for the last two layers separately
-            print(
-                f"Conv (pool 2) {i+1} Cin/Cout: {int(num_filters[i] * alpha)}/{int(num_filters[i + 1] * alpha)}"
-            )
             self._layers.append(
                 XiConv(
                     int(num_filters[i] * alpha),
@@ -306,9 +304,6 @@ class XiNet(nn.Module):
                 )
             )
             count_downsample += 1
-            print(
-                f"Conv {i+1} Cin/Cout: {int(num_filters[i + 1] * alpha)}/{int(num_filters[i + 1] * alpha)}"
-            )
             self._layers.append(
                 XiConv(
                     int(num_filters[i + 1] * alpha),
@@ -335,9 +330,6 @@ class XiNet(nn.Module):
                 attention=False,
             )
         )
-        print(
-            f"Conv (no attention) {len(num_filters)-2} Cin/Cout: {int(num_filters[-2] * alpha)}/{int(num_filters[-1] * alpha)}"
-        )
         # count_downsample += 1
         self._layers.append(
             XiConv(
@@ -351,9 +343,7 @@ class XiNet(nn.Module):
                 attention=False,
             )
         )
-        print(
-            f"Conv (no attention) {len(num_filters)-1} Cin/Cout: {int(num_filters[-1] * alpha)}/{int(num_filters[-1] * alpha)}"
-        )
+        memo_output_channels.append(int(num_filters[-1] * alpha))
 
         if self.return_layers is not None:
             print(f"XiNet configured to return layers {self.return_layers}:")
@@ -408,7 +398,12 @@ class XiNet(nn.Module):
 # print(xn(x).size())  # -> [8, 25, 64, 128]
 # print(sum([p.numel() for p in xn.parameters()]))  # -> 5086 (vs. 2768 enc lv 1)
 
-xn = XiNet([32, 64, 128], 0.4, 4, 3, base_filters=48)
-x = torch.rand([8, 32, 64, 128])
-print(xn(x).size())  # -> [8, 25, 64, 128]
-print(sum([p.numel() for p in xn.parameters()]))  # -> 5086 (vs. 2768 enc lv 1)
+# memo = []
+# xn = XiNet([3, 256, 512], memo, 0.4, 4, 3, base_filters=12)
+# x = torch.rand([8, 3, 256, 512])
+# y = xn(x)
+# print(y.size())
+# print(memo[0])
+# print(sum([p.numel() for p in xn.parameters()]))  # -> 5086 (vs. 2768 enc lv 1)
+# y = torch.nn.ConvTranspose2d(memo[0], 16, kernel_size=2, stride=2)(y)
+# print(y.size())  # -> [8, 25, 64, 128]

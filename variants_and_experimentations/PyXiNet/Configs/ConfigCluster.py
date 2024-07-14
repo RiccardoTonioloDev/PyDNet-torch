@@ -16,6 +16,10 @@ class ConfigCluster:
         self.image_height: int = 256
         self.shuffle_batch: bool = True
 
+        self.alpha = 0.4
+        self.gamma = 4
+        self.num_layers_decoder = 3
+
         self.weight_lr: int = 1
         # Left-right consistency weight in the total loss calculation
 
