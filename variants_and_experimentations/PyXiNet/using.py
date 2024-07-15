@@ -1,5 +1,5 @@
 from typing import Literal
-from PyXiNet import PyXiNet
+from PyXiNet import PyXiNetA1
 from Config import Config
 from KittiDataset import KittiDataset
 import torch
@@ -72,7 +72,7 @@ def post_process_disparity(disp: torch.Tensor) -> torch.Tensor:
 
 
 def use_with_path(
-    env: Literal["HomeLab", "Cluster"], img_path: str, model: PyXiNet
+    env: Literal["HomeLab", "Cluster"], img_path: str, model: PyXiNetA1
 ) -> None:
     """
     It makes use of the provided model, to make a depth map of the image located in the `img_path` path.

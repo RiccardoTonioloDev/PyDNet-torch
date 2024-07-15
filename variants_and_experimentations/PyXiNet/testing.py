@@ -3,7 +3,7 @@ import numpy as np
 import os
 from typing import List, Literal
 from KittiDataset import KittiDataset
-from PyXiNet import PyXiNet
+from PyXiNet import PyXiNetA1
 from Losses import L_total, generate_image_left, generate_image_right
 from Configs.ConfigCluster import ConfigCluster
 from Configs.ConfigHomeLab import ConfigHomeLab
@@ -14,7 +14,7 @@ from using import use
 def evaluate_on_test_set(
     dataset: KittiDataset,
     config: ConfigHomeLab | ConfigCluster,
-    model: PyXiNet,
+    model: PyXiNetA1,
     device: torch.device,
 ) -> torch.Tensor:
     """
@@ -75,7 +75,7 @@ def evaluate_on_test_set(
 
 
 def generate_test_disparities(
-    env: Literal["HomeLab", "Cluster"], model: PyXiNet
+    env: Literal["HomeLab", "Cluster"], model: PyXiNetA1
 ) -> None:
     """
     It generates the `disparities.npy` file that will be used for the true evaluation step.
@@ -119,7 +119,7 @@ def generate_test_disparities(
             if True:
                 # without post processing
                 disp: torch.Tensor = model(left_img)[0][:, 0, :, :].unsqueeze(1)
-                upscaled_disparities = PyXiNet.upscale_img(disp, (256, 512))
+                upscaled_disparities = PyXiNetA1.upscale_img(disp, (256, 512))
                 disparities[i] = upscaled_disparities[0, 0, :, :].cpu().numpy()
             else:
                 # with post processing

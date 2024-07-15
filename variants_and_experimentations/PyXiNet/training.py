@@ -7,13 +7,13 @@ import torch.utils.data
 import wandb
 import torch.optim as optim
 from KittiDataset import KittiDataset
-from PyXiNet import PyXiNet
+from PyXiNet import PyXiNetA1
 from Config import Config
 from Losses import L_total, generate_image_left, generate_image_right
 from testing import evaluate_on_test_set
 
 
-def train(env: Literal["HomeLab", "Cluster"], model: PyXiNet) -> None:
+def train(env: Literal["HomeLab", "Cluster"], model: PyXiNetA1) -> None:
     """
     Function used to train the model.
         - `env`: is the selected configuration that will be use to configure the model, the dataset, the optimizer,

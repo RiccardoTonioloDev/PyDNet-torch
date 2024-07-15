@@ -5,14 +5,16 @@ import subprocess
 import numpy as np
 import threading
 from using import use
-from PyXiNet import PyXiNet
+from PyXiNet import PyXiNetA1
 from Config import Config
 import torch
 from matplotlib import cm
 
 
 class Webcam:
-    def __init__(self, root: tk.Tk, env: Literal["HomeLab", "Cluster"], model: PyXiNet):
+    def __init__(
+        self, root: tk.Tk, env: Literal["HomeLab", "Cluster"], model: PyXiNetA1
+    ):
         """
         # Warning
         This class has only been tested on macOS, with a Macbook M1 pro chip.

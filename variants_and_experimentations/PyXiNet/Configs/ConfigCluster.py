@@ -18,7 +18,6 @@ class ConfigCluster:
 
         self.alpha = 0.4
         self.gamma = 4
-        self.num_layers_decoder = 3
 
         self.weight_lr: int = 1
         # Left-right consistency weight in the total loss calculation

@@ -5,7 +5,7 @@ from evaluating import eval_disparities_file
 from using import use_with_path, inference_time_avg_10
 from webcam import Webcam
 import tkinter as tk
-from PyXiNet import PyXiNet
+from PyXiNet import PyXiNetA1
 from Config import Config
 
 parser = argparse.ArgumentParser(description="PyDNet pytorch implementation.")
@@ -32,7 +32,7 @@ if args.env not in ["HomeLab", "Cluster"]:
     exit(0)
 
 config = Config(args.env).get_configuration()
-model = PyXiNet(config)
+model = PyXiNetA1(config)
 
 if args.mode == "train":
     train(args.env, model)
