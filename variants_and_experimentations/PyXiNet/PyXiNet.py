@@ -8,7 +8,6 @@ from Blocks.Xavier_initializer import xavier_init
 from Blocks.XiEncoder import XiEncoder
 from Configs.ConfigCluster import ConfigCluster
 from Configs.ConfigHomeLab import ConfigHomeLab
-from Config import Config
 
 
 class PyXiNet(nn.Module):

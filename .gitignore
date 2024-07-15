@@ -163,18 +163,12 @@ bash_files/
 
 .DS_Store/
 
-PyDNet-torch/outputfiles/checkpoints/*/*.pth.tar
-PyDNet-torch/outputfiles/checkpoints/*.pth.tar
-PyDNet-torch/outputfiles/outputs/*.npy
-PyDNet-torch/outputfiles/outputs/*.err
-PyDNet-torch/outputfiles/outputs/*.out
 PyDNet-torch/wandb/
-PyXiNet/outputfiles/checkpoints/*/*.pth.tar
-PyXiNet/outputfiles/checkpoints/*.pth.tar
-PyXiNet/outputfiles/outputs/*.npy
-PyXiNet/outputfiles/outputs/*.err
-PyXiNet/outputfiles/outputs/*.out
 PyXiNet/wandb/
 slurm_files/wandb/
 outputfiles/*
 .DS_Store
+*.pth.tar
+*.npy
+*.err
+*.out

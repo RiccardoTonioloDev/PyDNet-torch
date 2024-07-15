@@ -2,7 +2,7 @@ import argparse
 from training import train
 from testing import generate_test_disparities
 from evaluating import eval_disparities_file
-from using import use_with_path
+from using import use_with_path, inference_time_avg_10
 from webcam import Webcam
 import tkinter as tk
 from PyXiNet import PyXiNet
@@ -31,14 +31,21 @@ if args.env not in ["HomeLab", "Cluster"]:
     )
     exit(0)
 
-model = PyXiNet(Config(args.env).get_configuration())
+config = Config(args.env).get_configuration()
+model = PyXiNet(config)
 
 if args.mode == "train":
     train(args.env, model)
 elif args.mode == "test":
     generate_test_disparities(args.env, model)
 elif args.mode == "eval":
-    eval_disparities_file(args.env)
+    # eval_disparities_file(args.env)
+    inference_time_avg_10(
+        config.test_dir_for_inference_time,
+        model,
+        config.image_height,
+        config.image_width,
+    )
 elif args.mode == "use":
     use_with_path(args.env, args.img_path, model)
 elif args.mode == "webcam":

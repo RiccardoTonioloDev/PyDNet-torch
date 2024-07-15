@@ -2,7 +2,7 @@ import argparse
 from training import train
 from testing import generate_test_disparities
 from evaluating import eval_disparities_file
-from using import use_with_path
+from using import use_with_path, inference_time_avg_10
 from webcam import Webcam
 import tkinter as tk
 from Config import Config
@@ -32,7 +32,8 @@ if args.env not in ["HomeLab", "Cluster"]:
     exit(0)
 
 model = None
-if Config(args.env).get_configuration().PyDNet2_usage:
+config = Config(args.env).get_configuration()
+if config.PyDNet2_usage:
     model = Pydnet2()
 else:
     model = Pydnet(Config(args.env))
@@ -42,7 +43,13 @@ if args.mode == "train":
 elif args.mode == "test":
     generate_test_disparities(args.env, model)
 elif args.mode == "eval":
-    eval_disparities_file(args.env)
+    # eval_disparities_file(args.env)
+    inference_time_avg_10(
+        config.test_dir_for_inference_time,
+        model,
+        config.image_height,
+        config.image_width,
+    )
 elif args.mode == "use":
     use_with_path(args.env, args.img_path, model)
 elif args.mode == "webcam":

@@ -38,12 +38,15 @@ class ConfigHomeLab:
         # parameter is set to True.
 
         self.checkpoint_to_use_path: str = (
-            "./outputfiles/checkpoints/PyDNet2/PyDNet-torch_V2.pth.tar"
+            "./outputfiles/checkpoints/PyDNet-torch_50.pth.tar"
         )
         # Path of the checkpoint file to be used inside the model.
 
         self.disparities_to_use: str = "./outputfiles/outputs/disparities.npy"
         # Path of the disparities file to be used for evaluations.
+
+        self.test_dir_for_inference_time = "../10_test_images/"
+        # Path of the directory used to measure the avg inference time with CPU on 10 images.
 
         ########################## EXPERIMENTS PARAMETERS ##########################
         # This parameters are only used to test the behaviour of the model and the #
@@ -69,7 +72,7 @@ class ConfigHomeLab:
         self.RatioImageSize1280x384: bool = False
         # It will use a 1280x384 size for input images.
 
-        self.PyDNet2_usage: bool = True
+        self.PyDNet2_usage: bool = False
         # It means that the model that will be used is PyDNet2 instead of PyDNet
         count = 0
         if self.HSV_processing:

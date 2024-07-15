@@ -196,3 +196,36 @@ def use(
         ).squeeze()
 
     return img_disparities
+
+
+def inference_time_avg_10(dir: str, model: torch.nn.Module, rsz_h: int, rsz_w: int):
+    file_list = []
+    if os.path.isdir(dir):
+        file_list = [
+            os.path.abspath(os.path.join(dir, f))
+            for f in os.listdir(dir)
+            if os.path.isfile(os.path.join(dir, f))
+        ]
+    else:
+        raise Exception(
+            f"The provided directory: {dir} is non existent or it's not a directory."
+        )
+    images = [Image.open(path) for path in file_list]
+    recorded_time = []
+    for img in images:
+        original_width, original_height = img.size
+        start_time = time.time()
+        use(
+            model,
+            img,
+            rsz_w,
+            rsz_h,
+            original_width,
+            original_height,
+            torch.device("cpu"),
+        ).cpu().numpy()
+        elapsed_time = time.time() - start_time
+        recorded_time.append(elapsed_time)
+    print(
+        f"The avg on 10 images for inference time is: {(sum(recorded_time) / len(recorded_time)):.02f}s"
+    )

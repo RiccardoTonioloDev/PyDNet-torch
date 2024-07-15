@@ -55,6 +55,9 @@ class ConfigCluster:
         self.disparities_to_use: str = ""
         # Path of the disparities file to be used for evaluations.
 
+        self.test_dir_for_inference_time = ""
+        # Path of the directory used to measure the avg inference time with CPU on 10 images.
+
         ########################## EXPERIMENTS PARAMETERS ##########################
         # This parameters are only used to test the behaviour of the model and the #
         # training using specific conditions. All of them are meant to be turned   #

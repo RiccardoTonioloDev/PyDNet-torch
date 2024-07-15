@@ -42,12 +42,15 @@ class ConfigHomeLab:
         # parameter is set to True.
 
         self.checkpoint_to_use_path: str = (
-            "./outputfiles/checkpoints/PyXiNet_K_50.pth.tar"
+            "./outputfiles/checkpoints/checkpoint_e047.pth.tar"
         )
         # Path of the checkpoint file to be used inside the model.
 
         self.disparities_to_use: str = "./outputfiles/outputs/disparities.npy"
         # Path of the disparities file to be used for evaluations.
+
+        self.test_dir_for_inference_time = "../../10_test_images/"
+        # Path of the directory used to measure the avg inference time with CPU on 10 images.
 
         ########################## EXPERIMENTS PARAMETERS ##########################
         # This parameters are only used to test the behaviour of the model and the #
