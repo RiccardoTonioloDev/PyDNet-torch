@@ -72,7 +72,7 @@ def post_process_disparity(disp: torch.Tensor) -> torch.Tensor:
 
 
 def use_with_path(
-    env: Literal["HomeLab", "Cluster"], img_path: str, model: PyXiNetA1
+    env: Literal["HomeLab", "Cluster"], img_path: str, model: torch.nn.Module
 ) -> None:
     """
     It makes use of the provided model, to make a depth map of the image located in the `img_path` path.

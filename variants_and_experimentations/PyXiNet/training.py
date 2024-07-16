@@ -13,7 +13,7 @@ from Losses import L_total, generate_image_left, generate_image_right
 from testing import evaluate_on_test_set
 
 
-def train(env: Literal["HomeLab", "Cluster"], model: PyXiNetA1) -> None:
+def train(env: Literal["HomeLab", "Cluster"], model: torch.nn.Module) -> None:
     """
     Function used to train the model.
         - `env`: is the selected configuration that will be use to configure the model, the dataset, the optimizer,

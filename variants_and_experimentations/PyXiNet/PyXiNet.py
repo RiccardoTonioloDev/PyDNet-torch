@@ -146,7 +146,7 @@ class PyXiNetB1(nn.Module):
             input_shape=input_shape,
             alpha=config.alpha,
             gamma=config.gamma,
-            num_layers=3,
+            num_layers=4,
             mid_channels=24,
             out_channels=32,
         )
@@ -157,7 +157,7 @@ class PyXiNetB1(nn.Module):
             input_shape=input_shape,
             alpha=config.alpha,
             gamma=config.gamma,
-            num_layers=4,
+            num_layers=5,
             mid_channels=28,
             out_channels=64,
         )

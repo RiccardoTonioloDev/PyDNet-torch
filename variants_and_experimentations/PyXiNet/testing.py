@@ -14,7 +14,7 @@ from using import use
 def evaluate_on_test_set(
     dataset: KittiDataset,
     config: ConfigHomeLab | ConfigCluster,
-    model: PyXiNetA1,
+    model: torch.nn.Module,
     device: torch.device,
 ) -> torch.Tensor:
     """
@@ -75,7 +75,7 @@ def evaluate_on_test_set(
 
 
 def generate_test_disparities(
-    env: Literal["HomeLab", "Cluster"], model: PyXiNetA1
+    env: Literal["HomeLab", "Cluster"], model: torch.nn.Module
 ) -> None:
     """
     It generates the `disparities.npy` file that will be used for the true evaluation step.

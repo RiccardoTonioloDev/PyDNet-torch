@@ -13,7 +13,7 @@ from matplotlib import cm
 
 class Webcam:
     def __init__(
-        self, root: tk.Tk, env: Literal["HomeLab", "Cluster"], model: PyXiNetA1
+        self, root: tk.Tk, env: Literal["HomeLab", "Cluster"], model: torch.nn.Module
     ):
         """
         # Warning
