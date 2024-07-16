@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --nodelist=dellsrv4
-#SBATCH --job-name=PyXiNet
+#SBATCH --job-name=PyXiNetB1
 #SBATCH --partition=allgroups
 #SBATCH --ntasks=1
 #SBATCH --mem=16G
