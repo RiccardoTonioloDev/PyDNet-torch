@@ -13,6 +13,7 @@ class XiEncoder(nn.Module):
         num_layers: int,
         mid_channels: int,
         out_channels: int,
+        with_upscaling: bool = True,
     ):
         super(XiEncoder, self).__init__()
 
@@ -25,15 +26,27 @@ class XiEncoder(nn.Module):
             num_layers=num_layers,
             base_filters=mid_channels,
         )
-        self.deconv = nn.ConvTranspose2d(
-            in_channels=memo_output_channels[0],
-            out_channels=out_channels,
-            kernel_size=2,
-            stride=2,
-        )
+        self.with_upscaling = with_upscaling
+        if self.with_upscaling:
+            self.deconv = nn.ConvTranspose2d(
+                in_channels=memo_output_channels[0],
+                out_channels=out_channels,
+                kernel_size=2,
+                stride=2,
+            )
+        else:
+            self.pw_compression = nn.Conv2d(
+                in_channels=memo_output_channels[0],
+                out_channels=out_channels,
+                kernel_size=1,
+            )
         self.activation = nn.LeakyReLU(0.2)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.xn(x)
-        x = self.deconv(x)
-        return self.activation(x)
+        if self.with_upscaling:
+            x = self.deconv(x)
+        else:
+            x = self.pw_compression(x)
+        x = self.activation(x)
+        return x
