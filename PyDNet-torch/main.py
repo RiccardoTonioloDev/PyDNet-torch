@@ -43,7 +43,7 @@ if args.mode == "train":
 elif args.mode == "test":
     generate_test_disparities(args.env, model)
 elif args.mode == "eval":
-    # eval_disparities_file(args.env)
+    eval_disparities_file(args.env)
     inference_time_avg_10(
         config.test_dir_for_inference_time,
         model,
