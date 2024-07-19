@@ -33,11 +33,11 @@ if args.env not in ["HomeLab", "Cluster"]:
 
 config = Config(args.env).get_configuration()
 # model = PyXiNetA1(config)
-# model = PyXiNetA2(config)
+model = PyXiNetA2(config)
 # model = PyXiNetB1(config)
 # model = PyXiNetB2(config)
 # model = PyXiNetB3(config)
-model = PyXiNetB4(config)
+# model = PyXiNetB4(config)
 
 if args.mode == "train":
     train(args.env, model)

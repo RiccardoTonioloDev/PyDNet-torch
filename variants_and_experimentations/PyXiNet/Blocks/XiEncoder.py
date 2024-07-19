@@ -26,6 +26,7 @@ class XiEncoder(nn.Module):
             num_layers=num_layers,
             base_filters=mid_channels,
         )
+        self.out_channels = out_channels
         self.with_upscaling = with_upscaling
         if self.with_upscaling:
             self.deconv = nn.ConvTranspose2d(
@@ -34,7 +35,7 @@ class XiEncoder(nn.Module):
                 kernel_size=2,
                 stride=2,
             )
-        else:
+        elif out_channels > 0:
             self.pw_compression = nn.Conv2d(
                 in_channels=memo_output_channels[0],
                 out_channels=out_channels,
@@ -46,7 +47,7 @@ class XiEncoder(nn.Module):
         x = self.xn(x)
         if self.with_upscaling:
             x = self.deconv(x)
-        else:
+        elif self.out_channels > 0:
             x = self.pw_compression(x)
         x = self.activation(x)
         return x
