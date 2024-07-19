@@ -8,7 +8,7 @@ Used & studied models:
 
 -   [PyDNet v1](https://github.com/mattpoggi/pydnet) (studied the original code and reproduced the experiment to verify paper results);
 -   [monodepth](https://github.com/mrharicot/monodepth) (used under the hood to train PyDNet);
--   [micromind](https://github.com/micromind-toolkit/micromind/tree/dev) (used XiNet for trying to make PyDNet v2 more efficient).
+-   [micromind](https://github.com/micromind-toolkit/micromind/tree/dev) (used XiNet trying to make PyDNet v2 more efficient).
 
 # General information
 
@@ -19,7 +19,7 @@ In this repository you can find these main folders:
     -   The original PyDNet v1 implementation, written in Tensorflow 1.X (with the code of monodepth that was used for training and evalutation);
     -   A migration of the code of PyDNet v1 to Tensorflow 2.X (unfortunately it doesn't work on the GPU);
     -   The code of micromind.
--   `/variants_and_experimentations`: attempts to transform PyDNet v2 in a more efficient and performant CNN through the use of the XiNet architecture;
+-   `/variants_and_experimentations`: attempts to transform PyDNet v2 in a more efficient and performant CNN through the use of the XiNet architecture (watch in the `/variants_and_experimentations/PyXiNet` folder);
 -   `/slurm_files`: the folder that contains slurm files that were used to execute the code inside of the training cluster.
 
 ## Info
