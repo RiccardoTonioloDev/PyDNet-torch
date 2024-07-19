@@ -3,7 +3,7 @@ import torch
 
 
 class DownsizingBlock(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int):
+    def __init__(self, in_channels: int, out_channels: int, stride: int = 2):
         super(DownsizingBlock, self).__init__()
 
         self.__block = nn.Sequential(
@@ -11,7 +11,7 @@ class DownsizingBlock(nn.Module):
                 in_channels=in_channels,
                 out_channels=out_channels,
                 kernel_size=3,
-                stride=2,
+                stride=stride,
                 padding=1,
             ),
             nn.LeakyReLU(0.2),
