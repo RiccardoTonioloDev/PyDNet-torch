@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import torch
 from Blocks.Xavier_initializer import xavier_init
 from Blocks.XiEncoder import XiEncoder
-from Blocks.LightSelfAttention import LightSelfAttentionCNN
+from Blocks.LightSelfAttention import LightSelfAttentionCNN1, LightSelfAttentionCNN2
 from Configs.ConfigCluster import ConfigCluster
 from Configs.ConfigHomeLab import ConfigHomeLab
 
@@ -761,7 +761,7 @@ class PyXiNetM1(nn.Module):
 
         # LEVEL 1
         self.__enc_1 = DownsizingBlock(3, 16)
-        self.__lsa_1 = LightSelfAttentionCNN(16, 128, 256)
+        self.__lsa_1 = LightSelfAttentionCNN1(16, 128, 256)
         self.__conv_block_1 = LevelConvolutionsBlock(16 + 8)
 
         # LEVEL 2
@@ -895,7 +895,273 @@ class PyXiNetM2(nn.Module):
         # LEVEL 1
         self.__enc_1 = DownsizingBlock(3, 16)
         self.__conv_block_1 = LevelConvolutionsBlock(16 + 8)
-        self.__lsa_1 = LightSelfAttentionCNN(16 + 8, 128, 256)
+        self.__lsa_1 = LightSelfAttentionCNN1(16 + 8, 128, 256)
+
+        # LEVEL 2
+        self.__enc_2 = XiEncoder(
+            input_shape=input_shape,
+            alpha=config.alpha,
+            gamma=config.gamma,
+            num_layers=3,
+            mid_channels=24,
+            out_channels=32,
+            with_upscaling=False,
+        )
+        self.__conv_block_2 = LevelConvolutionsBlock(32 + 8)
+
+        # LEVEL 3
+        self.__enc_3 = XiEncoder(
+            input_shape=input_shape,
+            alpha=config.alpha,
+            gamma=config.gamma,
+            num_layers=4,
+            mid_channels=28,
+            out_channels=64,
+            with_upscaling=False,
+        )
+        self.__conv_block_3 = LevelConvolutionsBlock(64 + 8)
+
+        # LEVEL 4
+        self.__enc_4 = XiEncoder(
+            input_shape=input_shape,
+            alpha=config.alpha,
+            gamma=config.gamma,
+            num_layers=5,
+            mid_channels=32,
+            out_channels=96,
+            with_upscaling=False,
+        )
+        self.__conv_block_4 = LevelConvolutionsBlock(96)
+
+        self.__upsizing_4 = UpsizingBlock(8, 8)
+        self.__upsizing_3 = UpsizingBlock(8, 8)
+        self.__upsizing_2 = UpsizingBlock(8, 8)
+
+        self.apply(xavier_init)
+
+    def __level_activations(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Gives back the disparities for left images on the 0th channel and for the right images on the 1th channel.
+            - `x`: torch.Tensor[B,C,W,H]
+
+        Returns a torch.Tensor[B,2,W,H]
+        """
+        return 0.3 * torch.sigmoid(x[:, :2, :, :])
+
+    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+        # Level's starting blocks
+        conv1 = self.__enc_1(x)
+        conv2 = self.__enc_2(x)
+        conv3 = self.__enc_3(x)
+        conv4 = self.__enc_4(x)
+
+        # LEVEL 4
+        conv4b = self.__conv_block_4(conv4)
+        disp4 = self.__level_activations(conv4b)
+
+        conv4b = self.__upsizing_4(conv4b)
+
+        # LEVEL 3
+        concat3 = torch.cat((conv3, conv4b), 1)
+        conv3b = self.__conv_block_3(concat3)
+        disp3 = self.__level_activations(conv3b)
+
+        conv3b = self.__upsizing_3(conv3b)
+
+        # LEVEL 2
+        concat2 = torch.cat((conv2, conv3b), 1)
+        conv2b = self.__conv_block_2(concat2)
+        disp2 = self.__level_activations(conv2b)
+
+        conv2b = self.__upsizing_2(conv2b)
+
+        # LEVEL 1
+        concat1 = torch.cat((conv1, conv2b), 1)
+        sa_concat1 = self.__lsa_1(concat1)
+        conv1b = self.__conv_block_1(sa_concat1)
+        disp1 = self.__level_activations(conv1b)
+
+        return [disp1, disp2, disp3, disp4]
+
+    @staticmethod
+    def scale_pyramid(img_batch: torch.Tensor, num_scales: int = 3) -> torch.Tensor:
+        """
+        It scales the batch of images to `num_scales` scales, everytime dividing by 2 the height and the width.
+            - `img_batch`: torch.Tensor[B,C,H,W]
+            - `num_scales`: int
+
+        Returns a List[torch.Tensor[B,C,H,W]] with a length of `num_scales`.
+        """
+        scaled_imgs = []
+        _, _, h, w = img_batch.shape
+        for i in range(num_scales):
+            ratio = 2 ** (i + 1)
+            nh = h // ratio
+            nw = w // ratio
+            scaled_img = nn.functional.interpolate(
+                img_batch, size=(nh, nw), mode="area"
+            )
+            scaled_imgs.append(scaled_img)
+        return scaled_imgs
+
+    @staticmethod
+    def upscale_img(
+        img_tensor: torch.Tensor, new_2d_size: tuple[int, int] = (256, 512)
+    ) -> torch.Tensor:
+        """
+        It upscales the `img_tensor` using bilinear interpolation to the specified size `new_2d_size`.
+            - `img_tensor`: torch.Tensor[B,C,H,W];
+            - `new_2d_size`: tuple(width,height).
+
+        Returns a torch.Tensor[B,C,width, height].
+        """
+        return F.interpolate(
+            img_tensor, size=new_2d_size, mode="bilinear", align_corners=True
+        )
+
+
+class PyXiNetM3(nn.Module):
+    def __init__(self, config: ConfigHomeLab | ConfigCluster):
+        super(PyXiNetM3, self).__init__()
+        input_shape = [3, config.image_height, config.image_width]
+
+        # LEVEL 1
+        self.__enc_1 = DownsizingBlock(3, 16)
+        self.__lsa_1 = LightSelfAttentionCNN2(16, 128, 256)
+        self.__conv_block_1 = LevelConvolutionsBlock(16 + 8)
+
+        # LEVEL 2
+        self.__enc_2 = XiEncoder(
+            input_shape=input_shape,
+            alpha=config.alpha,
+            gamma=config.gamma,
+            num_layers=3,
+            mid_channels=24,
+            out_channels=32,
+            with_upscaling=False,
+        )
+        self.__conv_block_2 = LevelConvolutionsBlock(32 + 8)
+
+        # LEVEL 3
+        self.__enc_3 = XiEncoder(
+            input_shape=input_shape,
+            alpha=config.alpha,
+            gamma=config.gamma,
+            num_layers=4,
+            mid_channels=28,
+            out_channels=64,
+            with_upscaling=False,
+        )
+        self.__conv_block_3 = LevelConvolutionsBlock(64 + 8)
+
+        # LEVEL 4
+        self.__enc_4 = XiEncoder(
+            input_shape=input_shape,
+            alpha=config.alpha,
+            gamma=config.gamma,
+            num_layers=5,
+            mid_channels=32,
+            out_channels=96,
+            with_upscaling=False,
+        )
+        self.__conv_block_4 = LevelConvolutionsBlock(96)
+
+        self.__upsizing_4 = UpsizingBlock(8, 8)
+        self.__upsizing_3 = UpsizingBlock(8, 8)
+        self.__upsizing_2 = UpsizingBlock(8, 8)
+
+        self.apply(xavier_init)
+
+    def __level_activations(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Gives back the disparities for left images on the 0th channel and for the right images on the 1th channel.
+            - `x`: torch.Tensor[B,C,W,H]
+
+        Returns a torch.Tensor[B,2,W,H]
+        """
+        return 0.3 * torch.sigmoid(x[:, :2, :, :])
+
+    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+        # Level's starting blocks
+        conv1 = self.__enc_1(x)
+        conv2 = self.__enc_2(x)
+        conv3 = self.__enc_3(x)
+        conv4 = self.__enc_4(x)
+
+        # LEVEL 4
+        conv4b = self.__conv_block_4(conv4)
+        disp4 = self.__level_activations(conv4b)
+
+        conv4b = self.__upsizing_4(conv4b)
+
+        # LEVEL 3
+        concat3 = torch.cat((conv3, conv4b), 1)
+        conv3b = self.__conv_block_3(concat3)
+        disp3 = self.__level_activations(conv3b)
+
+        conv3b = self.__upsizing_3(conv3b)
+
+        # LEVEL 2
+        concat2 = torch.cat((conv2, conv3b), 1)
+        conv2b = self.__conv_block_2(concat2)
+        disp2 = self.__level_activations(conv2b)
+
+        conv2b = self.__upsizing_2(conv2b)
+
+        # LEVEL 1
+        sa_conv1 = self.__lsa_1(conv1)
+        concat1 = torch.cat((sa_conv1, conv2b), 1)
+        conv1b = self.__conv_block_1(concat1)
+        disp1 = self.__level_activations(conv1b)
+
+        return [disp1, disp2, disp3, disp4]
+
+    @staticmethod
+    def scale_pyramid(img_batch: torch.Tensor, num_scales: int = 3) -> torch.Tensor:
+        """
+        It scales the batch of images to `num_scales` scales, everytime dividing by 2 the height and the width.
+            - `img_batch`: torch.Tensor[B,C,H,W]
+            - `num_scales`: int
+
+        Returns a List[torch.Tensor[B,C,H,W]] with a length of `num_scales`.
+        """
+        scaled_imgs = []
+        _, _, h, w = img_batch.shape
+        for i in range(num_scales):
+            ratio = 2 ** (i + 1)
+            nh = h // ratio
+            nw = w // ratio
+            scaled_img = nn.functional.interpolate(
+                img_batch, size=(nh, nw), mode="area"
+            )
+            scaled_imgs.append(scaled_img)
+        return scaled_imgs
+
+    @staticmethod
+    def upscale_img(
+        img_tensor: torch.Tensor, new_2d_size: tuple[int, int] = (256, 512)
+    ) -> torch.Tensor:
+        """
+        It upscales the `img_tensor` using bilinear interpolation to the specified size `new_2d_size`.
+            - `img_tensor`: torch.Tensor[B,C,H,W];
+            - `new_2d_size`: tuple(width,height).
+
+        Returns a torch.Tensor[B,C,width, height].
+        """
+        return F.interpolate(
+            img_tensor, size=new_2d_size, mode="bilinear", align_corners=True
+        )
+
+
+class PyXiNetM4(nn.Module):
+    def __init__(self, config: ConfigHomeLab | ConfigCluster):
+        super(PyXiNetM4, self).__init__()
+        input_shape = [3, config.image_height, config.image_width]
+
+        # LEVEL 1
+        self.__enc_1 = DownsizingBlock(3, 16)
+        self.__conv_block_1 = LevelConvolutionsBlock(16 + 8)
+        self.__lsa_1 = LightSelfAttentionCNN2(16 + 8, 128, 256)
 
         # LEVEL 2
         self.__enc_2 = XiEncoder(
@@ -1026,9 +1292,9 @@ class PyXiNetM2(nn.Module):
 # xe = PyXiNetB4(ConfigHomeLab())
 # print(sum(p.numel() for p in xe.parameters()))
 # print(xe(torch.rand([8, 3, 256, 512]))[0].size())
-# xe = PyXiNetM1(ConfigHomeLab())
+# xe = PyXiNetM3(ConfigHomeLab())
 # print(sum(p.numel() for p in xe.parameters()))
 # print(xe(torch.rand([8, 3, 256, 512]))[0].size())
-# xe = PyXiNetM2(ConfigHomeLab())
+# xe = PyXiNetM4(ConfigHomeLab())
 # print(sum(p.numel() for p in xe.parameters()))
 # print(xe(torch.rand([8, 3, 256, 512]))[0].size())

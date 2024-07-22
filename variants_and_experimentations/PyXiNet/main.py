@@ -14,6 +14,8 @@ from PyXiNet import (
     PyXiNetB4,
     PyXiNetM1,
     PyXiNetM2,
+    PyXiNetM3,
+    PyXiNetM4,
 )
 from Config import Config
 
@@ -48,7 +50,9 @@ config = Config(args.env).get_configuration()
 # model = PyXiNetB3(config)
 # model = PyXiNetB4(config)
 # model = PyXiNetM1(config)
-model = PyXiNetM2(config)
+# model = PyXiNetM2(config)
+model = PyXiNetM3(config)
+# model = PyXiNetM4(config)
 
 if args.mode == "train":
     train(args.env, model)
