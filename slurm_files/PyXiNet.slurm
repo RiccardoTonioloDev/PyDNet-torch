@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH --nodelist=dellsrv5
-#SBATCH --job-name=PyXiNetM2
+#SBATCH --nodelist=dellcuda1
+#SBATCH --job-name=PyXiNetM3
 #SBATCH --partition=allgroups
 #SBATCH --ntasks=1
 #SBATCH --mem=16G
-#SBATCH --cpus-per-task=20
+#SBATCH --cpus-per-task=16
 #SBATCH --gres=gpu:1
 #SBATCH --time=4-00:00:00
-#SBATCH --error=../variants_and_experimentations/PyXiNet/outputfiles/outputs/PyXiNetM2.err
-#SBATCH --output=../variants_and_experimentations/PyXiNet/outputfiles/outputs/PyXiNetM2.out
+#SBATCH --error=../variants_and_experimentations/PyXiNet/outputfiles/outputs/PyXiNetM3.err
+#SBATCH --output=../variants_and_experimentations/PyXiNet/outputfiles/outputs/PyXiNetM3.out
 
 
 source /home/rtoniolo/.bashrc
