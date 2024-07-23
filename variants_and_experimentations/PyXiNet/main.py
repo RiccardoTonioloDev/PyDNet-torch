@@ -49,10 +49,10 @@ config = Config(args.env).get_configuration()
 # model = PyXiNetB2(config)
 # model = PyXiNetB3(config)
 # model = PyXiNetB4(config)
-# model = PyXiNetM1(config)
+model = PyXiNetM1(config)
 # model = PyXiNetM2(config)
 # model = PyXiNetM3(config)
-model = PyXiNetM4(config)
+# model = PyXiNetM4(config)
 
 if args.mode == "train":
     train(args.env, model)

@@ -41,7 +41,7 @@ class ConfigHomeLab:
         # parameter is set to True.
 
         self.checkpoint_to_use_path: str = (
-            "./outputfiles/checkpoints/alpha2/alpha2_e048.pth.tar"
+            "./outputfiles/checkpoints/magna4/magna4_e040.pth.tar"
         )
         # Path of the checkpoint file to be used inside the model.
 
