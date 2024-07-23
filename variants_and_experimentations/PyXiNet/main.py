@@ -5,7 +5,18 @@ from evaluating import eval_disparities_file
 from using import use_with_path, inference_time_avg_10
 from webcam import Webcam
 import tkinter as tk
-from PyXiNet import PyXiNetA1, PyXiNetA2, PyXiNetB1, PyXiNetB2, PyXiNetB3, PyXiNetB4
+from PyXiNet import (
+    PyXiNetA1,
+    PyXiNetA2,
+    PyXiNetB1,
+    PyXiNetB2,
+    PyXiNetB3,
+    PyXiNetB4,
+    PyXiNetM1,
+    PyXiNetM2,
+    PyXiNetM3,
+    PyXiNetM4,
+)
 from Config import Config
 
 parser = argparse.ArgumentParser(description="PyDNet pytorch implementation.")
@@ -33,11 +44,15 @@ if args.env not in ["HomeLab", "Cluster"]:
 
 config = Config(args.env).get_configuration()
 # model = PyXiNetA1(config)
-model = PyXiNetA2(config)
+# model = PyXiNetA2(config)
 # model = PyXiNetB1(config)
 # model = PyXiNetB2(config)
 # model = PyXiNetB3(config)
 # model = PyXiNetB4(config)
+# model = PyXiNetM1(config)
+# model = PyXiNetM2(config)
+# model = PyXiNetM3(config)
+model = PyXiNetM4(config)
 
 if args.mode == "train":
     train(args.env, model)
