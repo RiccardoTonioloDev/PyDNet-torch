@@ -55,8 +55,8 @@ config = Config(args.env).get_configuration()
 # model = PyXiNetM2(config)
 # model = PyXiNetM3(config)
 # model = PyXiNetM4(config)
-model = PyXiNetBCBAM1(config)
-# model = PyXiNetBCBAM2(config)
+# model = PyXiNetBCBAM1(config)
+model = PyXiNetBCBAM2(config)
 
 if args.mode == "train":
     train(args.env, model)
