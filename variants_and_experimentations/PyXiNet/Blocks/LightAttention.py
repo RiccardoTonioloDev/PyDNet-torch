@@ -139,4 +139,4 @@ class CBAM(nn.Module):
         #            COMBINED           #
         #################################
         residual_spacial_attention = x * spacial_att
-        return residual_channel_att + x
+        return residual_spacial_attention + x
