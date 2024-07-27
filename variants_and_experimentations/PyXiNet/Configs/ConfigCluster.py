@@ -37,7 +37,7 @@ class ConfigCluster:
         # Output directory for the disparities file and for cluster
         # logs (if you use slurm files)
         self.checkpoint_path: str = (
-            "/home/rtoniolo/Depth/variants_and_experimentations/PyXiNet/outputfiles/checkpoints/betaCBAM1/"
+            "/home/rtoniolo/Depth/variants_and_experimentations/PyXiNet/outputfiles/checkpoints/celer1/"
         )
         # Directory to be used to store checkpoint files.
 
