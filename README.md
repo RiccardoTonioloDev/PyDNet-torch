@@ -2,26 +2,29 @@
 
 Studying, implementing and experimenting with the PyTorch version of [PyDNet v1](https://github.com/mattpoggi/pydnet).
 
-Everything was made by me (if not cited otherwise).
-
-Used & studied models:
-
--   [PyDNet v1](https://github.com/mattpoggi/pydnet) (studied the original code and reproduced the experiment to verify paper results);
--   [monodepth](https://github.com/mrharicot/monodepth) (used under the hood to train PyDNet);
--   [micromind](https://github.com/micromind-toolkit/micromind/tree/dev) (used XiNet trying to make PyDNet v2 more efficient).
-
 # General information
 
-In this repository you can find these main folders:
+In this repository you can find these main files:
 
--   `/PyDNet-torch`: my PyDNet v1 and v2 implementation made using the PyTorch framework;
--   `/studied_models`: this folder contains:
-    -   The original PyDNet v1 implementation, written in Tensorflow 1.X (with the code of monodepth that was used for training and evalutation);
-    -   A migration of the code of PyDNet v1 to Tensorflow 2.X (unfortunately it doesn't work on the GPU);
-    -   The code of micromind.
--   `/variants_and_experimentations`: attempts to transform PyDNet v2 in a more efficient and performant CNN through the use of the XiNet architecture (watch in the `/variants_and_experimentations/PyXiNet` folder);
--   `/slurm_files`: the folder that contains slurm files that were used to execute the code inside of the training cluster;
--   `/10_test_images`: 10 different images from the KITTI dataset, that will be used in the evalutaion phase to compute the average inference time using only the CPU.
+-   `Config.py`: the file that implements the configurations format;
+-   `evaluating.py`: the file that implements the evaluation logic;
+-   `KittiDataset.py`: it's the dataset implementation (it can be used for other types of datasets other than KITTi, such as CityScapes for example, as long as they have a file with images paths specified that can be used by the `KittiDataset` class);
+-   `Losses.py`: here the losses used by the training procedure are implemented;
+-   `main.py`: here the main logic is implemented (this is the file that has to be executed in order to train, use or evaluate the models);
+-   `Pydnet.py`: here PyDNet v1 and PyDNet v2 are implemented;
+-   `testing.py`: here the testing logic is implemented;
+-   `training.py`: here the training logic is implemented;
+-   `using.py`: here the logic for the model usage is implemented;
+-   `webcam.py`: here the logic for the model usage through the webcam is implemented.
+
+In this repository you can also find these main folders:
+
+-   `10_test_images`: those are 10 random images from the KITTI dataset, used to evaluate the model on inference time;
+-   `Blocks`: here the various blocks used inside of PyDNet are implemented;
+-   `Configs`: here the various configurations that were used to train, use or evaluate PyDNet are implemented (watch the **Configurations** subsection to learn more);
+-   `filenames`: here are stored the various files containing the paths for the images of the KITTI and CityScapes dataset;
+-   `outputfiles`: this is a utility directory, made to store the outputs of the various procedures (slurm output files, and models checkpoints);
+-   `slurm_files`: here are stored the various slurm files used to train the models.
 
 ## Info
 
@@ -31,7 +34,7 @@ In this repository you can find these main folders:
 > -   install the package locally;
 > -   configure the packate with your account information.
 
-# PyDNet-torch
+# The code
 
 ## Requirements
 
@@ -54,17 +57,17 @@ pip install wandb pandas matplotlib Pillow
 
 To make things smoother to try and test, this project is based on configurations, lowering the amount of cli parameters you have to care for while executing the scripts.
 
-You can find two examples of configurations inside the `PyDNet-torch/Configs` folder and two other examples inside the `variants_and_experimentations/PyXiNet` folder. Every configuration parameter that's not obvious it's well documented in the provided examples.
+You can find two examples of configurations inside the `Configs` folder. Every configuration parameter that's not obvious it's well documented in the provided examples.
 
 You'll want to create your own configuration or modify the existing ones to specify different parameters, including the dataset path, the image resolution, and so on.
 
-To create a custom configuration, copy one of the examples (i.e. `ConfigHomeLab.py`) and modify it to your likings.
+To create a custom configuration, copy one of the examples (i.e. `Configs/ConfigHomeLab.py`) and modify it to your likings.
 
 After you created your own configuration, you have to:
 
--   Import it inside of `PyDNet-torch/Config.py`, and add the conditional logic to use your specified configuration;
--   Import it inside of `PyDNet-torch/testing.py` and add it as the possible types of the parameter `config` inside of the `evaluate_on_test_set` function;
--   In the `PyDNet-torch/main.py` file you could add to the helper of the parser of the `--env` parameter, the name that has to be provided in order to select your new configuration.
+-   Import it inside of `Config.py`, and add the conditional logic to use your specified configuration;
+-   Import it inside of `testing.py` and add it as the possible types of the parameter `config` inside of the `evaluate_on_test_set` function;
+-   In the `main.py` file you could add to the helper of the parser of the `--env` parameter, the name that has to be provided in order to select your new configuration.
 
 After that you are done!
 
@@ -75,7 +78,6 @@ After that you are done!
 This will generate the checkpoint of the last epoch and will maintain the checkpoint that had the best performance on the test set, inside the directory specified by the `checkpoint_path` attribute of the selected configuration.
 
 ```bash
-cd PyDNet-torch # To move into the model's folder
 python3 main.py --mode=train --env=<NameOfTheConfigurationYouWantToUse>
 ```
 
@@ -89,7 +91,6 @@ The file will be placed inside the directory specified by the `output_directory`
 To execute the testing you should have a checkpoint first, specified by the `checkpoint_to_use_path` attribute of the selected configuration.
 
 ```bash
-cd PyDNet-torch # To move into the model's folder
 python3 main.py --mode=test --env=<NameOfTheConfigurationYouWantToUse>
 ```
 
@@ -104,7 +105,6 @@ It will also measure the average of the inference time, of the model on 10 diffe
 To execute the evalutation you should have a checkpoint first, specified by the `checkpoint_to_use_path` attribute , and a `disparities.npy` file inside the folder specified by the `output_directory` attribute of the selected configuration.
 
 ```bash
-cd PyDNet-torch # To move into the model's folder
 python3 main.py --mode=eval --env=<NameOfTheConfigurationYouWantToUse>
 ```
 
@@ -117,36 +117,5 @@ This will create a depth map image in the same folder of the image that was prov
 To use the model on an image you should have a checkpoint first, specified by the `checkpoint_to_use_path` attribute of the selected configuration.
 
 ```bash
-cd PyDNet-torch # To move into the model's folder
 python3 main.py --mode=use --env=<NameOfTheConfigurationYouWantToUse> --img_path=<pathOfTheImageYouWantToUse>
-```
-
-# Requirements for the original PyDNet
-
-> **WARNING**: this original implementation uses an outdated and deprecated version of Tensorflow, that was using really old versions of CUDA and cuDNN.
->
-> Even if you can achieve to download the right version of the packages needed to make it work, you will have to re-configure the drivers in your machine to make it use the GPU.
->
-> Another possible way could be to use nvidia-docker (never tried).
-
-In case you want to use the original PyDNet Tensorflow 1.X implementation, these are the commands you can use to configure the python environment:
-
-```bash
-# Create the conda environment (use your preferred name)
-conda create -n <environmentName> python=3.7
-# Activate the conda environment
-conda activate <environmentName>
-# Install the required packages (I'll use pip)
-pip install protobuf==3.20 tensorflow_gpu=1.13.2 scipy=1.2 matplotlib wandb
-```
-
-In case you want to use the migrated PyDNet Tensorflow 2.X implementation, these are the commands you can use to configure the python environment (it doesn't work on the GPU):
-
-```bash
-# Create the conda environment (use your preferred name)
-conda create -n <environmentName>
-# Activate the conda environment
-conda activate <environmentName>
-# Install the required packages (I'll use pip)
-pip install tensorflow Pillow matplotlib wandb
 ```
